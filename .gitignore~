@@ -1,0 +1,15 @@
+*.class
+*.jar
+
+hadoop-assemblies/target/
+hadoop-client/target/
+hadoop-common-project/target/
+hadoop-dist/target/
+hadoop-hdfs-project/target/
+hadoop-mapreduce-project/target/
+hadoop-maven-plugins/target/
+hadoop-minicluster/target/
+hadoop-project/target/
+hadoop-project-dist/target/
+hadoop-tools/target/
+hadoop-yarn-project/target/

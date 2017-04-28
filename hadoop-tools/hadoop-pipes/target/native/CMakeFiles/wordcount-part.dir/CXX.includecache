@@ -1,0 +1,32 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-tools/hadoop-pipes/src/main/native/examples/impl/wordcount-part.cc
+hadoop/Pipes.hh
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-tools/hadoop-pipes/src/main/native/examples/impl/hadoop/Pipes.hh
+hadoop/TemplateFactory.hh
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-tools/hadoop-pipes/src/main/native/examples/impl/hadoop/TemplateFactory.hh
+hadoop/StringUtils.hh
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-tools/hadoop-pipes/src/main/native/examples/impl/hadoop/StringUtils.hh
+
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-tools/hadoop-pipes/src/main/native/pipes/api/hadoop/Pipes.hh
+string
+-
+stdint.h
+-
+
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-tools/hadoop-pipes/src/main/native/pipes/api/hadoop/TemplateFactory.hh
+
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-tools/hadoop-pipes/src/main/native/utils/api/hadoop/StringUtils.hh
+stdint.h
+-
+string
+-
+vector
+-
+

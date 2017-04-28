@@ -1,0 +1,3 @@
+org.apache.hadoop.fs.s3
+org.apache.hadoop.fs.s3a
+org.apache.hadoop.fs.s3native

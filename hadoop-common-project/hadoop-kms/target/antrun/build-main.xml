@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="maven-antrun-" default="main"  >
+<target name="main" if="tar">
+  <echo file="/home/lxb/workspace/hadoop-2.6.2-src/hadoop-common-project/hadoop-kms/target/dist-maketar.sh">cd &quot;/home/lxb/workspace/hadoop-2.6.2-src/hadoop-common-project/hadoop-kms/target&quot;
+                      tar cf - hadoop-kms-2.6.2 | gzip &gt; hadoop-kms-2.6.2.tar.gz</echo>
+  <exec dir="/home/lxb/workspace/hadoop-2.6.2-src/hadoop-common-project/hadoop-kms/target" executable="sh" failonerror="true">
+    <arg line="./dist-maketar.sh"/>
+  </exec>
+</target>
+</project>

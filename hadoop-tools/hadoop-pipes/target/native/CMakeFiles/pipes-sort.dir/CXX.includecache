@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-tools/hadoop-pipes/src/main/native/examples/impl/sort.cc
+hadoop/Pipes.hh
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-tools/hadoop-pipes/src/main/native/examples/impl/hadoop/Pipes.hh
+hadoop/TemplateFactory.hh
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-tools/hadoop-pipes/src/main/native/examples/impl/hadoop/TemplateFactory.hh
+
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-tools/hadoop-pipes/src/main/native/pipes/api/hadoop/Pipes.hh
+string
+-
+stdint.h
+-
+
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-tools/hadoop-pipes/src/main/native/pipes/api/hadoop/TemplateFactory.hh
+

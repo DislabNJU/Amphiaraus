@@ -1,0 +1,10 @@
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-hdfs-project/hadoop-hdfs/target/native/CMakeFiles/hdfs.dir
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-hdfs-project/hadoop-hdfs/target/native/CMakeFiles/hdfs_static.dir
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-hdfs-project/hadoop-hdfs/target/native/CMakeFiles/native_mini_dfs.dir
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-hdfs-project/hadoop-hdfs/target/native/CMakeFiles/test_libhdfs_ops.dir
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-hdfs-project/hadoop-hdfs/target/native/CMakeFiles/test_libhdfs_read.dir
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-hdfs-project/hadoop-hdfs/target/native/CMakeFiles/test_libhdfs_threaded.dir
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-hdfs-project/hadoop-hdfs/target/native/CMakeFiles/test_libhdfs_vecsum.dir
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-hdfs-project/hadoop-hdfs/target/native/CMakeFiles/test_libhdfs_write.dir
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-hdfs-project/hadoop-hdfs/target/native/CMakeFiles/test_libhdfs_zerocopy.dir
+/home/lxb/workspace/hadoop-2.6.2-src/hadoop-hdfs-project/hadoop-hdfs/target/native/CMakeFiles/test_native_mini_dfs.dir
