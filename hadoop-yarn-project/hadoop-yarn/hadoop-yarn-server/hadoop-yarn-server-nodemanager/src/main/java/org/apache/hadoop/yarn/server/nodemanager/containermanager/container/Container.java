@@ -57,7 +57,7 @@ public interface Container extends EventHandler<ContainerEvent> {
   String toString();
   
  //added by lxb
- void setContainerMemUsage(long Vmem, long Pmem, long CpuTime);
+ void setContainerUsage(long Vmem, long Pmem, float MemUtilization, long CpuTime, long checkTime);
  
  ContainerDetails getContainerDetails();
 

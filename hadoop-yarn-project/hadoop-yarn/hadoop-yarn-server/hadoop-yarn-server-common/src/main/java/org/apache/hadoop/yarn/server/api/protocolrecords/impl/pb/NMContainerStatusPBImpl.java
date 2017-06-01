@@ -317,12 +317,20 @@ public class NMContainerStatusPBImpl extends NMContainerStatus {
 		  containerDetails.CpuTime = p.getCpuTime();
 	  else
 		  containerDetails.CpuTime = -1;
+	  if(p.hasMemUtilization())
+		  containerDetails.MemUtilization = p.getMemUtilization();
+	  else 
+		  containerDetails.MemUtilization = -1;
+	  if(p.hasCpuUtilization())
+		  containerDetails.CpuUtilization = p.getCpuUtilization();
+	  else 
+		  containerDetails.CpuUtilization = -1;
 	  
 	  return containerDetails;
   }
   
   private ContainerDetailsProto convertToProtoFormat(ContainerDetails d){
-	  return ContainerDetailsProto.newBuilder().setPmem(d.Pmem).setVmem(d.Vmem).setCpuTime(d.CpuTime).build();
+	  return ContainerDetailsProto.newBuilder().setPmem(d.Pmem).setVmem(d.Vmem).setCpuTime(d.CpuTime).setMemUtilization(d.MemUtilization).setCpuUtilization(d.CpuUtilization).build();
   }
 
 }

@@ -87,7 +87,14 @@ public class ContainerStatusPBImpl extends ContainerStatus {
     sb.append(" ContainerStatus: [");
     sb.append("ContainerId: ").append(getContainerId()).append(", ");
     sb.append("State: ").append(getState()).append(", ");
-    sb.append("Details:(").append("Pmem:").append(getDetails().Pmem).append("  Vmem:").append(getDetails().Vmem).append("  CpuTime:").append(getDetails().CpuTime).append("), ");
+    
+    sb.append("Details:(").append("Pmem:").append(getDetails().Pmem)
+    .append("  Vmem:").append(getDetails().Vmem)
+    .append(" MemUtilization").append(getDetails().MemUtilization)
+    .append("  CpuTime:").append(getDetails().CpuTime)
+    .append(" CpuUtilization").append(getDetails().CpuUtilization)
+    .append("), ");
+    
     sb.append("Diagnostics: ").append(getDiagnostics()).append(", ");
     sb.append("ExitStatus: ").append(getExitStatus()).append(", ");
     sb.append("]");
@@ -233,12 +240,20 @@ public class ContainerStatusPBImpl extends ContainerStatus {
 		  containerDetails.CpuTime = p.getCpuTime();
 	  else
 		  containerDetails.CpuTime = -1;
+	  if(p.hasMemUtilization())
+		  containerDetails.MemUtilization = p.getMemUtilization();
+	  else 
+		  containerDetails.MemUtilization = -1;
+	  if(p.hasCpuUtilization())
+		  containerDetails.CpuUtilization = p.getCpuUtilization();
+	  else 
+		  containerDetails.CpuUtilization = -1;
 	  
 	  return containerDetails;
   }
   
   private ContainerDetailsProto convertToProtoFormat(ContainerDetails d){
-	  return ContainerDetailsProto.newBuilder().setPmem(d.Pmem).setVmem(d.Vmem).setCpuTime(d.CpuTime).build();
+	  return ContainerDetailsProto.newBuilder().setPmem(d.Pmem).setVmem(d.Vmem).setCpuTime(d.CpuTime).setMemUtilization(d.MemUtilization).setCpuUtilization(d.CpuUtilization).build();
   }
 
 

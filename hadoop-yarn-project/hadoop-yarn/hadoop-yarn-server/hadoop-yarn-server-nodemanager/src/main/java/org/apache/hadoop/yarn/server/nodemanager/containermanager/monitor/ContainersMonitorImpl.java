@@ -466,7 +466,9 @@ public class ContainersMonitorImpl extends AbstractService implements
               
             //added by lxb;
               long currentCpuUsage = pTree.getCumulativeCpuTime();
-              setCurrentVmemUsage(containerId, currentVmemUsage, currentPmemUsage, currentCpuUsage);  
+              long checkTime = System.currentTimeMillis();
+              float MemUtilization = currentPmemUsage / (float)pmemLimit;
+              setCurrentContainerUsage(containerId, currentVmemUsage, currentPmemUsage, MemUtilization, currentCpuUsage, checkTime);  
             }
           } catch (Exception e) {
             // Log the exception and proceed to the next container.
@@ -486,9 +488,9 @@ public class ContainersMonitorImpl extends AbstractService implements
     }
     
     //added by lxb;
-    private void setCurrentVmemUsage(ContainerId containerId, long Vmem, long Pmem, long CpuTime){
+    private void setCurrentContainerUsage(ContainerId containerId, long Vmem, long Pmem, float MemUtilization, long CpuTime, long checkTime){
     	Container container = context.getContainers().get(containerId);
-    	container.setContainerMemUsage(Vmem, Pmem, CpuTime);
+    	container.setContainerUsage(Vmem, Pmem, MemUtilization, CpuTime, checkTime);
     }
 
     private String formatErrorMessage(String memTypeExceeded,

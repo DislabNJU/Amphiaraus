@@ -151,7 +151,7 @@ public ContainerDetails getContainerDetails() {
 }
 
 @Override
-public void setContainerMemUsage(long Vmem, long Pmem, long CpuTime) {
+public void setContainerUsage(long Vmem, long Pmem, float MemUtilization, long CpuTime, long checkTime) {
 	// TODO Auto-generated method stub
 	
 }

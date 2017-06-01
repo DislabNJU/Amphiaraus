@@ -6732,6 +6732,26 @@ public final class YarnProtos {
      * <code>optional int64 CpuTime = 3;</code>
      */
     long getCpuTime();
+
+    // optional float MemUtilization = 4;
+    /**
+     * <code>optional float MemUtilization = 4;</code>
+     */
+    boolean hasMemUtilization();
+    /**
+     * <code>optional float MemUtilization = 4;</code>
+     */
+    float getMemUtilization();
+
+    // optional float CpuUtilization = 5;
+    /**
+     * <code>optional float CpuUtilization = 5;</code>
+     */
+    boolean hasCpuUtilization();
+    /**
+     * <code>optional float CpuUtilization = 5;</code>
+     */
+    float getCpuUtilization();
   }
   /**
    * Protobuf type {@code hadoop.yarn.ContainerDetailsProto}
@@ -6797,6 +6817,16 @@ public final class YarnProtos {
             case 24: {
               bitField0_ |= 0x00000004;
               cpuTime_ = input.readInt64();
+              break;
+            }
+            case 37: {
+              bitField0_ |= 0x00000008;
+              memUtilization_ = input.readFloat();
+              break;
+            }
+            case 45: {
+              bitField0_ |= 0x00000010;
+              cpuUtilization_ = input.readFloat();
               break;
             }
           }
@@ -6887,10 +6917,44 @@ public final class YarnProtos {
       return cpuTime_;
     }
 
+    // optional float MemUtilization = 4;
+    public static final int MEMUTILIZATION_FIELD_NUMBER = 4;
+    private float memUtilization_;
+    /**
+     * <code>optional float MemUtilization = 4;</code>
+     */
+    public boolean hasMemUtilization() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional float MemUtilization = 4;</code>
+     */
+    public float getMemUtilization() {
+      return memUtilization_;
+    }
+
+    // optional float CpuUtilization = 5;
+    public static final int CPUUTILIZATION_FIELD_NUMBER = 5;
+    private float cpuUtilization_;
+    /**
+     * <code>optional float CpuUtilization = 5;</code>
+     */
+    public boolean hasCpuUtilization() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional float CpuUtilization = 5;</code>
+     */
+    public float getCpuUtilization() {
+      return cpuUtilization_;
+    }
+
     private void initFields() {
       vmem_ = 0L;
       pmem_ = 0L;
       cpuTime_ = 0L;
+      memUtilization_ = 0F;
+      cpuUtilization_ = 0F;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -6913,6 +6977,12 @@ public final class YarnProtos {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeInt64(3, cpuTime_);
       }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeFloat(4, memUtilization_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeFloat(5, cpuUtilization_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -6933,6 +7003,14 @@ public final class YarnProtos {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt64Size(3, cpuTime_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeFloatSize(4, memUtilization_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeFloatSize(5, cpuUtilization_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -6972,6 +7050,14 @@ public final class YarnProtos {
         result = result && (getCpuTime()
             == other.getCpuTime());
       }
+      result = result && (hasMemUtilization() == other.hasMemUtilization());
+      if (hasMemUtilization()) {
+        result = result && (Float.floatToIntBits(getMemUtilization())    == Float.floatToIntBits(other.getMemUtilization()));
+      }
+      result = result && (hasCpuUtilization() == other.hasCpuUtilization());
+      if (hasCpuUtilization()) {
+        result = result && (Float.floatToIntBits(getCpuUtilization())    == Float.floatToIntBits(other.getCpuUtilization()));
+      }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
       return result;
@@ -6996,6 +7082,16 @@ public final class YarnProtos {
       if (hasCpuTime()) {
         hash = (37 * hash) + CPUTIME_FIELD_NUMBER;
         hash = (53 * hash) + hashLong(getCpuTime());
+      }
+      if (hasMemUtilization()) {
+        hash = (37 * hash) + MEMUTILIZATION_FIELD_NUMBER;
+        hash = (53 * hash) + Float.floatToIntBits(
+            getMemUtilization());
+      }
+      if (hasCpuUtilization()) {
+        hash = (37 * hash) + CPUUTILIZATION_FIELD_NUMBER;
+        hash = (53 * hash) + Float.floatToIntBits(
+            getCpuUtilization());
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -7112,6 +7208,10 @@ public final class YarnProtos {
         bitField0_ = (bitField0_ & ~0x00000002);
         cpuTime_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000004);
+        memUtilization_ = 0F;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        cpuUtilization_ = 0F;
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
 
@@ -7152,6 +7252,14 @@ public final class YarnProtos {
           to_bitField0_ |= 0x00000004;
         }
         result.cpuTime_ = cpuTime_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.memUtilization_ = memUtilization_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.cpuUtilization_ = cpuUtilization_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -7176,6 +7284,12 @@ public final class YarnProtos {
         }
         if (other.hasCpuTime()) {
           setCpuTime(other.getCpuTime());
+        }
+        if (other.hasMemUtilization()) {
+          setMemUtilization(other.getMemUtilization());
+        }
+        if (other.hasCpuUtilization()) {
+          setCpuUtilization(other.getCpuUtilization());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -7299,6 +7413,72 @@ public final class YarnProtos {
       public Builder clearCpuTime() {
         bitField0_ = (bitField0_ & ~0x00000004);
         cpuTime_ = 0L;
+        onChanged();
+        return this;
+      }
+
+      // optional float MemUtilization = 4;
+      private float memUtilization_ ;
+      /**
+       * <code>optional float MemUtilization = 4;</code>
+       */
+      public boolean hasMemUtilization() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional float MemUtilization = 4;</code>
+       */
+      public float getMemUtilization() {
+        return memUtilization_;
+      }
+      /**
+       * <code>optional float MemUtilization = 4;</code>
+       */
+      public Builder setMemUtilization(float value) {
+        bitField0_ |= 0x00000008;
+        memUtilization_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional float MemUtilization = 4;</code>
+       */
+      public Builder clearMemUtilization() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        memUtilization_ = 0F;
+        onChanged();
+        return this;
+      }
+
+      // optional float CpuUtilization = 5;
+      private float cpuUtilization_ ;
+      /**
+       * <code>optional float CpuUtilization = 5;</code>
+       */
+      public boolean hasCpuUtilization() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional float CpuUtilization = 5;</code>
+       */
+      public float getCpuUtilization() {
+        return cpuUtilization_;
+      }
+      /**
+       * <code>optional float CpuUtilization = 5;</code>
+       */
+      public Builder setCpuUtilization(float value) {
+        bitField0_ |= 0x00000010;
+        cpuUtilization_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional float CpuUtilization = 5;</code>
+       */
+      public Builder clearCpuUtilization() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        cpuUtilization_ = 0F;
         onChanged();
         return this;
       }
@@ -46639,218 +46819,219 @@ public final class YarnProtos {
       "e_id\030\001 \001(\0132\030.hadoop.yarn.NodeIdProto\0229\n\017" +
       "resource_option\030\002 \001(\0132 .hadoop.yarn.Reso" +
       "urceOptionProto\"!\n\rPriorityProto\022\020\n\010prio",
-      "rity\030\001 \001(\005\"D\n\025ContainerDetailsProto\022\014\n\004V" +
+      "rity\030\001 \001(\005\"t\n\025ContainerDetailsProto\022\014\n\004V" +
       "mem\030\001 \001(\003\022\014\n\004Pmem\030\002 \001(\003\022\017\n\007CpuTime\030\003 \001(\003" +
-      "\"\220\002\n\016ContainerProto\022)\n\002id\030\001 \001(\0132\035.hadoop" +
-      ".yarn.ContainerIdProto\022(\n\006nodeId\030\002 \001(\0132\030" +
-      ".hadoop.yarn.NodeIdProto\022\031\n\021node_http_ad" +
-      "dress\030\003 \001(\t\022,\n\010resource\030\004 \001(\0132\032.hadoop.y" +
-      "arn.ResourceProto\022,\n\010priority\030\005 \001(\0132\032.ha" +
-      "doop.yarn.PriorityProto\0222\n\017container_tok" +
-      "en\030\006 \001(\0132\031.hadoop.common.TokenProto\"\243\003\n\024" +
-      "ContainerReportProto\0223\n\014container_id\030\001 \001",
-      "(\0132\035.hadoop.yarn.ContainerIdProto\022,\n\010res" +
-      "ource\030\002 \001(\0132\032.hadoop.yarn.ResourceProto\022" +
-      ")\n\007node_id\030\003 \001(\0132\030.hadoop.yarn.NodeIdPro" +
-      "to\022,\n\010priority\030\004 \001(\0132\032.hadoop.yarn.Prior" +
-      "ityProto\022\025\n\rcreation_time\030\005 \001(\003\022\023\n\013finis" +
-      "h_time\030\006 \001(\003\022\035\n\020diagnostics_info\030\007 \001(\t:\003" +
-      "N/A\022\017\n\007log_url\030\010 \001(\t\022\035\n\025container_exit_s" +
-      "tatus\030\t \001(\005\0229\n\017container_state\030\n \001(\0162 .h" +
-      "adoop.yarn.ContainerStateProto\022\031\n\021node_h" +
-      "ttp_address\030\013 \001(\t\"V\n\010URLProto\022\016\n\006scheme\030",
-      "\001 \001(\t\022\014\n\004host\030\002 \001(\t\022\014\n\004port\030\003 \001(\005\022\014\n\004fil" +
-      "e\030\004 \001(\t\022\020\n\010userInfo\030\005 \001(\t\"\341\001\n\022LocalResou" +
-      "rceProto\022\'\n\010resource\030\001 \001(\0132\025.hadoop.yarn" +
-      ".URLProto\022\014\n\004size\030\002 \001(\003\022\021\n\ttimestamp\030\003 \001" +
-      "(\003\0221\n\004type\030\004 \001(\0162#.hadoop.yarn.LocalReso" +
-      "urceTypeProto\022=\n\nvisibility\030\005 \001(\0162).hado" +
-      "op.yarn.LocalResourceVisibilityProto\022\017\n\007" +
-      "pattern\030\006 \001(\t\"\264\002\n#ApplicationResourceUsa" +
-      "geReportProto\022\033\n\023num_used_containers\030\001 \001" +
-      "(\005\022\037\n\027num_reserved_containers\030\002 \001(\005\0222\n\016u",
-      "sed_resources\030\003 \001(\0132\032.hadoop.yarn.Resour" +
-      "ceProto\0226\n\022reserved_resources\030\004 \001(\0132\032.ha" +
-      "doop.yarn.ResourceProto\0224\n\020needed_resour" +
-      "ces\030\005 \001(\0132\032.hadoop.yarn.ResourceProto\022\026\n" +
-      "\016memory_seconds\030\006 \001(\003\022\025\n\rvcore_seconds\030\007" +
-      " \001(\003\"\350\005\n\026ApplicationReportProto\0226\n\rappli" +
-      "cationId\030\001 \001(\0132\037.hadoop.yarn.Application" +
-      "IdProto\022\014\n\004user\030\002 \001(\t\022\r\n\005queue\030\003 \001(\t\022\014\n\004" +
-      "name\030\004 \001(\t\022\014\n\004host\030\005 \001(\t\022\020\n\010rpc_port\030\006 \001" +
-      "(\005\0225\n\022client_to_am_token\030\007 \001(\0132\031.hadoop.",
-      "common.TokenProto\022F\n\026yarn_application_st" +
-      "ate\030\010 \001(\0162&.hadoop.yarn.YarnApplicationS" +
-      "tateProto\022\023\n\013trackingUrl\030\t \001(\t\022\030\n\013diagno" +
-      "stics\030\n \001(\t:\003N/A\022\021\n\tstartTime\030\013 \001(\003\022\022\n\nf" +
-      "inishTime\030\014 \001(\003\022J\n\030final_application_sta" +
-      "tus\030\r \001(\0162(.hadoop.yarn.FinalApplication" +
-      "StatusProto\022L\n\022app_resource_Usage\030\016 \001(\0132" +
-      "0.hadoop.yarn.ApplicationResourceUsageRe" +
-      "portProto\022\033\n\023originalTrackingUrl\030\017 \001(\t\022K" +
-      "\n\033currentApplicationAttemptId\030\020 \001(\0132&.ha",
-      "doop.yarn.ApplicationAttemptIdProto\022\020\n\010p" +
-      "rogress\030\021 \001(\002\022\027\n\017applicationType\030\022 \001(\t\022." +
-      "\n\013am_rm_token\030\023 \001(\0132\031.hadoop.common.Toke" +
-      "nProto\022\027\n\017applicationTags\030\024 \003(\t\"\345\002\n\035Appl" +
-      "icationAttemptReportProto\022F\n\026application" +
-      "_attempt_id\030\001 \001(\0132&.hadoop.yarn.Applicat" +
-      "ionAttemptIdProto\022\014\n\004host\030\002 \001(\t\022\020\n\010rpc_p" +
-      "ort\030\003 \001(\005\022\024\n\014tracking_url\030\004 \001(\t\022\030\n\013diagn" +
-      "ostics\030\005 \001(\t:\003N/A\022U\n\036yarn_application_at" +
-      "tempt_state\030\006 \001(\0162-.hadoop.yarn.YarnAppl",
-      "icationAttemptStateProto\0226\n\017am_container" +
-      "_id\030\007 \001(\0132\035.hadoop.yarn.ContainerIdProto" +
-      "\022\035\n\025original_tracking_url\030\010 \001(\t\")\n\013NodeI" +
-      "dProto\022\014\n\004host\030\001 \001(\t\022\014\n\004port\030\002 \001(\005\"\321\002\n\017N" +
-      "odeReportProto\022(\n\006nodeId\030\001 \001(\0132\030.hadoop." +
-      "yarn.NodeIdProto\022\023\n\013httpAddress\030\002 \001(\t\022\020\n" +
-      "\010rackName\030\003 \001(\t\022(\n\004used\030\004 \001(\0132\032.hadoop.y" +
-      "arn.ResourceProto\022.\n\ncapability\030\005 \001(\0132\032." +
-      "hadoop.yarn.ResourceProto\022\025\n\rnumContaine" +
-      "rs\030\006 \001(\005\022/\n\nnode_state\030\007 \001(\0162\033.hadoop.ya",
-      "rn.NodeStateProto\022\025\n\rhealth_report\030\010 \001(\t" +
-      "\022\037\n\027last_health_report_time\030\t \001(\003\022\023\n\013nod" +
-      "e_labels\030\n \003(\t\"S\n\023NodeIdToLabelsProto\022(\n" +
-      "\006nodeId\030\001 \001(\0132\030.hadoop.yarn.NodeIdProto\022" +
-      "\022\n\nnodeLabels\030\002 \003(\t\"\340\001\n\024ResourceRequestP" +
-      "roto\022,\n\010priority\030\001 \001(\0132\032.hadoop.yarn.Pri" +
-      "orityProto\022\025\n\rresource_name\030\002 \001(\t\022.\n\ncap" +
-      "ability\030\003 \001(\0132\032.hadoop.yarn.ResourceProt" +
-      "o\022\026\n\016num_containers\030\004 \001(\005\022\034\n\016relax_local" +
-      "ity\030\005 \001(\010:\004true\022\035\n\025node_label_expression",
-      "\030\006 \001(\t\"\224\001\n\026PreemptionMessageProto\022B\n\016str" +
-      "ictContract\030\001 \001(\0132*.hadoop.yarn.StrictPr" +
-      "eemptionContractProto\0226\n\010contract\030\002 \001(\0132" +
-      "$.hadoop.yarn.PreemptionContractProto\"Y\n" +
-      "\035StrictPreemptionContractProto\0228\n\tcontai" +
-      "ner\030\001 \003(\0132%.hadoop.yarn.PreemptionContai" +
-      "nerProto\"\222\001\n\027PreemptionContractProto\022=\n\010" +
-      "resource\030\001 \003(\0132+.hadoop.yarn.PreemptionR" +
-      "esourceRequestProto\0228\n\tcontainer\030\002 \003(\0132%" +
-      ".hadoop.yarn.PreemptionContainerProto\"E\n",
-      "\030PreemptionContainerProto\022)\n\002id\030\001 \001(\0132\035." +
-      "hadoop.yarn.ContainerIdProto\"U\n\036Preempti" +
-      "onResourceRequestProto\0223\n\010resource\030\001 \001(\013" +
-      "2!.hadoop.yarn.ResourceRequestProto\"X\n\035R" +
-      "esourceBlacklistRequestProto\022\033\n\023blacklis" +
-      "t_additions\030\001 \003(\t\022\032\n\022blacklist_removals\030" +
-      "\002 \003(\t\"\247\006\n!ApplicationSubmissionContextPr" +
-      "oto\0227\n\016application_id\030\001 \001(\0132\037.hadoop.yar" +
-      "n.ApplicationIdProto\022\035\n\020application_name" +
-      "\030\002 \001(\t:\003N/A\022\026\n\005queue\030\003 \001(\t:\007default\022,\n\010p",
-      "riority\030\004 \001(\0132\032.hadoop.yarn.PriorityProt" +
-      "o\022C\n\021am_container_spec\030\005 \001(\0132(.hadoop.ya" +
-      "rn.ContainerLaunchContextProto\022)\n\033cancel" +
-      "_tokens_when_complete\030\006 \001(\010:\004true\022\033\n\014unm" +
-      "anaged_am\030\007 \001(\010:\005false\022\031\n\016maxAppAttempts" +
-      "\030\010 \001(\005:\0010\022,\n\010resource\030\t \001(\0132\032.hadoop.yar" +
-      "n.ResourceProto\022\035\n\017applicationType\030\n \001(\t" +
-      ":\004YARN\022:\n+keep_containers_across_applica" +
-      "tion_attempts\030\013 \001(\010:\005false\022\027\n\017applicatio" +
-      "nTags\030\014 \003(\t\022.\n\"attempt_failures_validity",
-      "_interval\030\r \001(\003:\002-1\022H\n\027log_aggregation_c" +
-      "ontext\030\016 \001(\0132\'.hadoop.yarn.LogAggregatio" +
-      "nContextProto\0227\n\016reservation_id\030\017 \001(\0132\037." +
-      "hadoop.yarn.ReservationIdProto\022\035\n\025node_l" +
-      "abel_expression\030\020 \001(\t\022H\n\035am_container_re" +
-      "source_request\030\021 \001(\0132!.hadoop.yarn.Resou" +
-      "rceRequestProto\"T\n\032LogAggregationContext" +
-      "Proto\022\033\n\017include_pattern\030\001 \001(\t:\002.*\022\031\n\017ex" +
-      "clude_pattern\030\002 \001(\t:\000\"e\n\026ApplicationACLM" +
-      "apProto\022;\n\naccessType\030\001 \001(\0162\'.hadoop.yar",
-      "n.ApplicationAccessTypeProto\022\016\n\003acl\030\002 \001(" +
-      "\t:\001 \"4\n\027YarnClusterMetricsProto\022\031\n\021num_n" +
-      "ode_managers\030\001 \001(\005\"\303\002\n\016QueueInfoProto\022\021\n" +
-      "\tqueueName\030\001 \001(\t\022\020\n\010capacity\030\002 \001(\002\022\027\n\017ma" +
-      "ximumCapacity\030\003 \001(\002\022\027\n\017currentCapacity\030\004" +
-      " \001(\002\022+\n\005state\030\005 \001(\0162\034.hadoop.yarn.QueueS" +
-      "tateProto\0220\n\013childQueues\030\006 \003(\0132\033.hadoop." +
-      "yarn.QueueInfoProto\0229\n\014applications\030\007 \003(" +
-      "\0132#.hadoop.yarn.ApplicationReportProto\022\034" +
-      "\n\024accessibleNodeLabels\030\010 \003(\t\022\"\n\032defaultN",
-      "odeLabelExpression\030\t \001(\t\"X\n\025QueueUserACL" +
-      "InfoProto\022\021\n\tqueueName\030\001 \001(\t\022,\n\010userAcls" +
-      "\030\002 \003(\0162\032.hadoop.yarn.QueueACLProto\";\n\022Re" +
-      "servationIdProto\022\n\n\002id\030\001 \001(\003\022\031\n\021cluster_" +
-      "timestamp\030\002 \001(\003\"\222\001\n\027ReservationRequestPr" +
-      "oto\022.\n\ncapability\030\001 \001(\0132\032.hadoop.yarn.Re" +
-      "sourceProto\022\031\n\016num_containers\030\002 \001(\005:\0011\022\026" +
-      "\n\013concurrency\030\003 \001(\005:\0011\022\024\n\010duration\030\004 \001(\003" +
-      ":\002-1\"\254\001\n\030ReservationRequestsProto\022C\n\025res" +
-      "ervation_resources\030\001 \003(\0132$.hadoop.yarn.R",
-      "eservationRequestProto\022K\n\013interpreter\030\002 " +
-      "\001(\0162/.hadoop.yarn.ReservationRequestInte" +
-      "rpreterProto:\005R_ALL\"\236\001\n\032ReservationDefin" +
-      "itionProto\022C\n\024reservation_requests\030\001 \001(\013" +
-      "2%.hadoop.yarn.ReservationRequestsProto\022" +
-      "\017\n\007arrival\030\002 \001(\003\022\020\n\010deadline\030\003 \001(\003\022\030\n\020re" +
-      "servation_name\030\004 \001(\t\"\257\002\n\033ContainerLaunch" +
-      "ContextProto\022@\n\016localResources\030\001 \003(\0132(.h" +
-      "adoop.yarn.StringLocalResourceMapProto\022\016" +
-      "\n\006tokens\030\002 \001(\014\0226\n\014service_data\030\003 \003(\0132 .h",
-      "adoop.yarn.StringBytesMapProto\0226\n\013enviro" +
-      "nment\030\004 \003(\0132!.hadoop.yarn.StringStringMa" +
-      "pProto\022\017\n\007command\030\005 \003(\t\022=\n\020application_A" +
-      "CLs\030\006 \003(\0132#.hadoop.yarn.ApplicationACLMa" +
-      "pProto\"\361\001\n\024ContainerStatusProto\0223\n\014conta" +
-      "iner_id\030\001 \001(\0132\035.hadoop.yarn.ContainerIdP" +
-      "roto\022/\n\005state\030\002 \001(\0162 .hadoop.yarn.Contai" +
-      "nerStateProto\022\030\n\013diagnostics\030\003 \001(\t:\003N/A\022" +
-      "\032\n\013exit_status\030\004 \001(\005:\005-1000\022=\n\021container" +
-      "_details\030\005 \001(\0132\".hadoop.yarn.ContainerDe",
-      "tailsProto\"\214\001\n%ContainerResourceIncrease" +
-      "RequestProto\0223\n\014container_id\030\001 \001(\0132\035.had" +
-      "oop.yarn.ContainerIdProto\022.\n\ncapability\030" +
-      "\002 \001(\0132\032.hadoop.yarn.ResourceProto\"\271\001\n\036Co" +
-      "ntainerResourceIncreaseProto\0223\n\014containe" +
+      "\022\026\n\016MemUtilization\030\004 \001(\002\022\026\n\016CpuUtilizati" +
+      "on\030\005 \001(\002\"\220\002\n\016ContainerProto\022)\n\002id\030\001 \001(\0132" +
+      "\035.hadoop.yarn.ContainerIdProto\022(\n\006nodeId" +
+      "\030\002 \001(\0132\030.hadoop.yarn.NodeIdProto\022\031\n\021node" +
+      "_http_address\030\003 \001(\t\022,\n\010resource\030\004 \001(\0132\032." +
+      "hadoop.yarn.ResourceProto\022,\n\010priority\030\005 " +
+      "\001(\0132\032.hadoop.yarn.PriorityProto\0222\n\017conta" +
+      "iner_token\030\006 \001(\0132\031.hadoop.common.TokenPr",
+      "oto\"\243\003\n\024ContainerReportProto\0223\n\014containe" +
       "r_id\030\001 \001(\0132\035.hadoop.yarn.ContainerIdProt" +
-      "o\022.\n\ncapability\030\002 \001(\0132\032.hadoop.yarn.Reso" +
-      "urceProto\0222\n\017container_token\030\003 \001(\0132\031.had" +
-      "oop.common.TokenProto\"\205\001\n\036ContainerResou" +
-      "rceDecreaseProto\0223\n\014container_id\030\001 \001(\0132\035",
-      ".hadoop.yarn.ContainerIdProto\022.\n\ncapabil" +
-      "ity\030\002 \001(\0132\032.hadoop.yarn.ResourceProto\"Z\n" +
-      "\033StringLocalResourceMapProto\022\013\n\003key\030\001 \001(" +
-      "\t\022.\n\005value\030\002 \001(\0132\037.hadoop.yarn.LocalReso" +
-      "urceProto\"2\n\024StringStringMapProto\022\013\n\003key" +
-      "\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\"1\n\023StringBytesMapP" +
-      "roto\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\014*?\n\023Cont" +
-      "ainerStateProto\022\t\n\005C_NEW\020\001\022\r\n\tC_RUNNING\020" +
-      "\002\022\016\n\nC_COMPLETE\020\003*\204\001\n\031YarnApplicationSta" +
-      "teProto\022\007\n\003NEW\020\001\022\016\n\nNEW_SAVING\020\002\022\r\n\tSUBM",
-      "ITTED\020\003\022\014\n\010ACCEPTED\020\004\022\013\n\007RUNNING\020\005\022\014\n\010FI" +
-      "NISHED\020\006\022\n\n\006FAILED\020\007\022\n\n\006KILLED\020\010*\302\002\n Yar" +
-      "nApplicationAttemptStateProto\022\023\n\017APP_ATT" +
-      "EMPT_NEW\020\001\022\031\n\025APP_ATTEMPT_SUBMITTED\020\002\022\031\n" +
-      "\025APP_ATTEMPT_SCHEDULED\020\003\022 \n\034APP_ATTEMPT_" +
-      "ALLOCATED_SAVING\020\004\022\031\n\025APP_ATTEMPT_ALLOCA" +
-      "TED\020\005\022\030\n\024APP_ATTEMPT_LAUNCHED\020\006\022\026\n\022APP_A" +
-      "TTEMPT_FAILED\020\007\022\027\n\023APP_ATTEMPT_RUNNING\020\010" +
-      "\022\031\n\025APP_ATTEMPT_FINISHING\020\t\022\030\n\024APP_ATTEM" +
-      "PT_FINISHED\020\n\022\026\n\022APP_ATTEMPT_KILLED\020\013*c\n",
-      "\033FinalApplicationStatusProto\022\021\n\rAPP_UNDE" +
-      "FINED\020\000\022\021\n\rAPP_SUCCEEDED\020\001\022\016\n\nAPP_FAILED" +
-      "\020\002\022\016\n\nAPP_KILLED\020\003*H\n\034LocalResourceVisib" +
-      "ilityProto\022\n\n\006PUBLIC\020\001\022\013\n\007PRIVATE\020\002\022\017\n\013A" +
-      "PPLICATION\020\003*<\n\026LocalResourceTypeProto\022\013" +
-      "\n\007ARCHIVE\020\001\022\010\n\004FILE\020\002\022\013\n\007PATTERN\020\003*s\n\016No" +
-      "deStateProto\022\n\n\006NS_NEW\020\001\022\016\n\nNS_RUNNING\020\002" +
-      "\022\020\n\014NS_UNHEALTHY\020\003\022\025\n\021NS_DECOMMISSIONED\020" +
-      "\004\022\013\n\007NS_LOST\020\005\022\017\n\013NS_REBOOTED\020\006*0\n\016AMCom" +
-      "mandProto\022\r\n\tAM_RESYNC\020\001\022\017\n\013AM_SHUTDOWN\020",
-      "\002*N\n\032ApplicationAccessTypeProto\022\026\n\022APPAC" +
-      "CESS_VIEW_APP\020\001\022\030\n\024APPACCESS_MODIFY_APP\020" +
-      "\002*/\n\017QueueStateProto\022\r\n\tQ_STOPPED\020\001\022\r\n\tQ" +
-      "_RUNNING\020\002*H\n\rQueueACLProto\022\034\n\030QACL_SUBM" +
-      "IT_APPLICATIONS\020\001\022\031\n\025QACL_ADMINISTER_QUE" +
-      "UE\020\002*[\n\"ReservationRequestInterpreterPro" +
-      "to\022\t\n\005R_ANY\020\000\022\t\n\005R_ALL\020\001\022\013\n\007R_ORDER\020\002\022\022\n" +
-      "\016R_ORDER_NO_GAP\020\003*n\n\030ContainerExitStatus" +
-      "Proto\022\013\n\007SUCCESS\020\000\022\024\n\007INVALID\020\230\370\377\377\377\377\377\377\377\001" +
-      "\022\024\n\007ABORTED\020\234\377\377\377\377\377\377\377\377\001\022\031\n\014DISKS_FAILED\020\233",
-      "\377\377\377\377\377\377\377\377\001B0\n\034org.apache.hadoop.yarn.prot" +
-      "oB\nYarnProtos\210\001\001\240\001\001"
+      "o\022,\n\010resource\030\002 \001(\0132\032.hadoop.yarn.Resour" +
+      "ceProto\022)\n\007node_id\030\003 \001(\0132\030.hadoop.yarn.N" +
+      "odeIdProto\022,\n\010priority\030\004 \001(\0132\032.hadoop.ya" +
+      "rn.PriorityProto\022\025\n\rcreation_time\030\005 \001(\003\022" +
+      "\023\n\013finish_time\030\006 \001(\003\022\035\n\020diagnostics_info" +
+      "\030\007 \001(\t:\003N/A\022\017\n\007log_url\030\010 \001(\t\022\035\n\025containe" +
+      "r_exit_status\030\t \001(\005\0229\n\017container_state\030\n" +
+      " \001(\0162 .hadoop.yarn.ContainerStateProto\022\031",
+      "\n\021node_http_address\030\013 \001(\t\"V\n\010URLProto\022\016\n" +
+      "\006scheme\030\001 \001(\t\022\014\n\004host\030\002 \001(\t\022\014\n\004port\030\003 \001(" +
+      "\005\022\014\n\004file\030\004 \001(\t\022\020\n\010userInfo\030\005 \001(\t\"\341\001\n\022Lo" +
+      "calResourceProto\022\'\n\010resource\030\001 \001(\0132\025.had" +
+      "oop.yarn.URLProto\022\014\n\004size\030\002 \001(\003\022\021\n\ttimes" +
+      "tamp\030\003 \001(\003\0221\n\004type\030\004 \001(\0162#.hadoop.yarn.L" +
+      "ocalResourceTypeProto\022=\n\nvisibility\030\005 \001(" +
+      "\0162).hadoop.yarn.LocalResourceVisibilityP" +
+      "roto\022\017\n\007pattern\030\006 \001(\t\"\264\002\n#ApplicationRes" +
+      "ourceUsageReportProto\022\033\n\023num_used_contai",
+      "ners\030\001 \001(\005\022\037\n\027num_reserved_containers\030\002 " +
+      "\001(\005\0222\n\016used_resources\030\003 \001(\0132\032.hadoop.yar" +
+      "n.ResourceProto\0226\n\022reserved_resources\030\004 " +
+      "\001(\0132\032.hadoop.yarn.ResourceProto\0224\n\020neede" +
+      "d_resources\030\005 \001(\0132\032.hadoop.yarn.Resource" +
+      "Proto\022\026\n\016memory_seconds\030\006 \001(\003\022\025\n\rvcore_s" +
+      "econds\030\007 \001(\003\"\350\005\n\026ApplicationReportProto\022" +
+      "6\n\rapplicationId\030\001 \001(\0132\037.hadoop.yarn.App" +
+      "licationIdProto\022\014\n\004user\030\002 \001(\t\022\r\n\005queue\030\003" +
+      " \001(\t\022\014\n\004name\030\004 \001(\t\022\014\n\004host\030\005 \001(\t\022\020\n\010rpc_",
+      "port\030\006 \001(\005\0225\n\022client_to_am_token\030\007 \001(\0132\031" +
+      ".hadoop.common.TokenProto\022F\n\026yarn_applic" +
+      "ation_state\030\010 \001(\0162&.hadoop.yarn.YarnAppl" +
+      "icationStateProto\022\023\n\013trackingUrl\030\t \001(\t\022\030" +
+      "\n\013diagnostics\030\n \001(\t:\003N/A\022\021\n\tstartTime\030\013 " +
+      "\001(\003\022\022\n\nfinishTime\030\014 \001(\003\022J\n\030final_applica" +
+      "tion_status\030\r \001(\0162(.hadoop.yarn.FinalApp" +
+      "licationStatusProto\022L\n\022app_resource_Usag" +
+      "e\030\016 \001(\01320.hadoop.yarn.ApplicationResourc" +
+      "eUsageReportProto\022\033\n\023originalTrackingUrl",
+      "\030\017 \001(\t\022K\n\033currentApplicationAttemptId\030\020 " +
+      "\001(\0132&.hadoop.yarn.ApplicationAttemptIdPr" +
+      "oto\022\020\n\010progress\030\021 \001(\002\022\027\n\017applicationType" +
+      "\030\022 \001(\t\022.\n\013am_rm_token\030\023 \001(\0132\031.hadoop.com" +
+      "mon.TokenProto\022\027\n\017applicationTags\030\024 \003(\t\"" +
+      "\345\002\n\035ApplicationAttemptReportProto\022F\n\026app" +
+      "lication_attempt_id\030\001 \001(\0132&.hadoop.yarn." +
+      "ApplicationAttemptIdProto\022\014\n\004host\030\002 \001(\t\022" +
+      "\020\n\010rpc_port\030\003 \001(\005\022\024\n\014tracking_url\030\004 \001(\t\022" +
+      "\030\n\013diagnostics\030\005 \001(\t:\003N/A\022U\n\036yarn_applic",
+      "ation_attempt_state\030\006 \001(\0162-.hadoop.yarn." +
+      "YarnApplicationAttemptStateProto\0226\n\017am_c" +
+      "ontainer_id\030\007 \001(\0132\035.hadoop.yarn.Containe" +
+      "rIdProto\022\035\n\025original_tracking_url\030\010 \001(\t\"" +
+      ")\n\013NodeIdProto\022\014\n\004host\030\001 \001(\t\022\014\n\004port\030\002 \001" +
+      "(\005\"\321\002\n\017NodeReportProto\022(\n\006nodeId\030\001 \001(\0132\030" +
+      ".hadoop.yarn.NodeIdProto\022\023\n\013httpAddress\030" +
+      "\002 \001(\t\022\020\n\010rackName\030\003 \001(\t\022(\n\004used\030\004 \001(\0132\032." +
+      "hadoop.yarn.ResourceProto\022.\n\ncapability\030" +
+      "\005 \001(\0132\032.hadoop.yarn.ResourceProto\022\025\n\rnum",
+      "Containers\030\006 \001(\005\022/\n\nnode_state\030\007 \001(\0162\033.h" +
+      "adoop.yarn.NodeStateProto\022\025\n\rhealth_repo" +
+      "rt\030\010 \001(\t\022\037\n\027last_health_report_time\030\t \001(" +
+      "\003\022\023\n\013node_labels\030\n \003(\t\"S\n\023NodeIdToLabels" +
+      "Proto\022(\n\006nodeId\030\001 \001(\0132\030.hadoop.yarn.Node" +
+      "IdProto\022\022\n\nnodeLabels\030\002 \003(\t\"\340\001\n\024Resource" +
+      "RequestProto\022,\n\010priority\030\001 \001(\0132\032.hadoop." +
+      "yarn.PriorityProto\022\025\n\rresource_name\030\002 \001(" +
+      "\t\022.\n\ncapability\030\003 \001(\0132\032.hadoop.yarn.Reso" +
+      "urceProto\022\026\n\016num_containers\030\004 \001(\005\022\034\n\016rel",
+      "ax_locality\030\005 \001(\010:\004true\022\035\n\025node_label_ex" +
+      "pression\030\006 \001(\t\"\224\001\n\026PreemptionMessageProt" +
+      "o\022B\n\016strictContract\030\001 \001(\0132*.hadoop.yarn." +
+      "StrictPreemptionContractProto\0226\n\010contrac" +
+      "t\030\002 \001(\0132$.hadoop.yarn.PreemptionContract" +
+      "Proto\"Y\n\035StrictPreemptionContractProto\0228" +
+      "\n\tcontainer\030\001 \003(\0132%.hadoop.yarn.Preempti" +
+      "onContainerProto\"\222\001\n\027PreemptionContractP" +
+      "roto\022=\n\010resource\030\001 \003(\0132+.hadoop.yarn.Pre" +
+      "emptionResourceRequestProto\0228\n\tcontainer",
+      "\030\002 \003(\0132%.hadoop.yarn.PreemptionContainer" +
+      "Proto\"E\n\030PreemptionContainerProto\022)\n\002id\030" +
+      "\001 \001(\0132\035.hadoop.yarn.ContainerIdProto\"U\n\036" +
+      "PreemptionResourceRequestProto\0223\n\010resour" +
+      "ce\030\001 \001(\0132!.hadoop.yarn.ResourceRequestPr" +
+      "oto\"X\n\035ResourceBlacklistRequestProto\022\033\n\023" +
+      "blacklist_additions\030\001 \003(\t\022\032\n\022blacklist_r" +
+      "emovals\030\002 \003(\t\"\247\006\n!ApplicationSubmissionC" +
+      "ontextProto\0227\n\016application_id\030\001 \001(\0132\037.ha" +
+      "doop.yarn.ApplicationIdProto\022\035\n\020applicat",
+      "ion_name\030\002 \001(\t:\003N/A\022\026\n\005queue\030\003 \001(\t:\007defa" +
+      "ult\022,\n\010priority\030\004 \001(\0132\032.hadoop.yarn.Prio" +
+      "rityProto\022C\n\021am_container_spec\030\005 \001(\0132(.h" +
+      "adoop.yarn.ContainerLaunchContextProto\022)" +
+      "\n\033cancel_tokens_when_complete\030\006 \001(\010:\004tru" +
+      "e\022\033\n\014unmanaged_am\030\007 \001(\010:\005false\022\031\n\016maxApp" +
+      "Attempts\030\010 \001(\005:\0010\022,\n\010resource\030\t \001(\0132\032.ha" +
+      "doop.yarn.ResourceProto\022\035\n\017applicationTy" +
+      "pe\030\n \001(\t:\004YARN\022:\n+keep_containers_across" +
+      "_application_attempts\030\013 \001(\010:\005false\022\027\n\017ap",
+      "plicationTags\030\014 \003(\t\022.\n\"attempt_failures_" +
+      "validity_interval\030\r \001(\003:\002-1\022H\n\027log_aggre" +
+      "gation_context\030\016 \001(\0132\'.hadoop.yarn.LogAg" +
+      "gregationContextProto\0227\n\016reservation_id\030" +
+      "\017 \001(\0132\037.hadoop.yarn.ReservationIdProto\022\035" +
+      "\n\025node_label_expression\030\020 \001(\t\022H\n\035am_cont" +
+      "ainer_resource_request\030\021 \001(\0132!.hadoop.ya" +
+      "rn.ResourceRequestProto\"T\n\032LogAggregatio" +
+      "nContextProto\022\033\n\017include_pattern\030\001 \001(\t:\002" +
+      ".*\022\031\n\017exclude_pattern\030\002 \001(\t:\000\"e\n\026Applica",
+      "tionACLMapProto\022;\n\naccessType\030\001 \001(\0162\'.ha" +
+      "doop.yarn.ApplicationAccessTypeProto\022\016\n\003" +
+      "acl\030\002 \001(\t:\001 \"4\n\027YarnClusterMetricsProto\022" +
+      "\031\n\021num_node_managers\030\001 \001(\005\"\303\002\n\016QueueInfo" +
+      "Proto\022\021\n\tqueueName\030\001 \001(\t\022\020\n\010capacity\030\002 \001" +
+      "(\002\022\027\n\017maximumCapacity\030\003 \001(\002\022\027\n\017currentCa" +
+      "pacity\030\004 \001(\002\022+\n\005state\030\005 \001(\0162\034.hadoop.yar" +
+      "n.QueueStateProto\0220\n\013childQueues\030\006 \003(\0132\033" +
+      ".hadoop.yarn.QueueInfoProto\0229\n\014applicati" +
+      "ons\030\007 \003(\0132#.hadoop.yarn.ApplicationRepor",
+      "tProto\022\034\n\024accessibleNodeLabels\030\010 \003(\t\022\"\n\032" +
+      "defaultNodeLabelExpression\030\t \001(\t\"X\n\025Queu" +
+      "eUserACLInfoProto\022\021\n\tqueueName\030\001 \001(\t\022,\n\010" +
+      "userAcls\030\002 \003(\0162\032.hadoop.yarn.QueueACLPro" +
+      "to\";\n\022ReservationIdProto\022\n\n\002id\030\001 \001(\003\022\031\n\021" +
+      "cluster_timestamp\030\002 \001(\003\"\222\001\n\027ReservationR" +
+      "equestProto\022.\n\ncapability\030\001 \001(\0132\032.hadoop" +
+      ".yarn.ResourceProto\022\031\n\016num_containers\030\002 " +
+      "\001(\005:\0011\022\026\n\013concurrency\030\003 \001(\005:\0011\022\024\n\010durati" +
+      "on\030\004 \001(\003:\002-1\"\254\001\n\030ReservationRequestsProt",
+      "o\022C\n\025reservation_resources\030\001 \003(\0132$.hadoo" +
+      "p.yarn.ReservationRequestProto\022K\n\013interp" +
+      "reter\030\002 \001(\0162/.hadoop.yarn.ReservationReq" +
+      "uestInterpreterProto:\005R_ALL\"\236\001\n\032Reservat" +
+      "ionDefinitionProto\022C\n\024reservation_reques" +
+      "ts\030\001 \001(\0132%.hadoop.yarn.ReservationReques" +
+      "tsProto\022\017\n\007arrival\030\002 \001(\003\022\020\n\010deadline\030\003 \001" +
+      "(\003\022\030\n\020reservation_name\030\004 \001(\t\"\257\002\n\033Contain" +
+      "erLaunchContextProto\022@\n\016localResources\030\001" +
+      " \003(\0132(.hadoop.yarn.StringLocalResourceMa",
+      "pProto\022\016\n\006tokens\030\002 \001(\014\0226\n\014service_data\030\003" +
+      " \003(\0132 .hadoop.yarn.StringBytesMapProto\0226" +
+      "\n\013environment\030\004 \003(\0132!.hadoop.yarn.String" +
+      "StringMapProto\022\017\n\007command\030\005 \003(\t\022=\n\020appli" +
+      "cation_ACLs\030\006 \003(\0132#.hadoop.yarn.Applicat" +
+      "ionACLMapProto\"\361\001\n\024ContainerStatusProto\022" +
+      "3\n\014container_id\030\001 \001(\0132\035.hadoop.yarn.Cont" +
+      "ainerIdProto\022/\n\005state\030\002 \001(\0162 .hadoop.yar" +
+      "n.ContainerStateProto\022\030\n\013diagnostics\030\003 \001" +
+      "(\t:\003N/A\022\032\n\013exit_status\030\004 \001(\005:\005-1000\022=\n\021c",
+      "ontainer_details\030\005 \001(\0132\".hadoop.yarn.Con" +
+      "tainerDetailsProto\"\214\001\n%ContainerResource" +
+      "IncreaseRequestProto\0223\n\014container_id\030\001 \001" +
+      "(\0132\035.hadoop.yarn.ContainerIdProto\022.\n\ncap" +
+      "ability\030\002 \001(\0132\032.hadoop.yarn.ResourceProt" +
+      "o\"\271\001\n\036ContainerResourceIncreaseProto\0223\n\014" +
+      "container_id\030\001 \001(\0132\035.hadoop.yarn.Contain" +
+      "erIdProto\022.\n\ncapability\030\002 \001(\0132\032.hadoop.y" +
+      "arn.ResourceProto\0222\n\017container_token\030\003 \001" +
+      "(\0132\031.hadoop.common.TokenProto\"\205\001\n\036Contai",
+      "nerResourceDecreaseProto\0223\n\014container_id" +
+      "\030\001 \001(\0132\035.hadoop.yarn.ContainerIdProto\022.\n" +
+      "\ncapability\030\002 \001(\0132\032.hadoop.yarn.Resource" +
+      "Proto\"Z\n\033StringLocalResourceMapProto\022\013\n\003" +
+      "key\030\001 \001(\t\022.\n\005value\030\002 \001(\0132\037.hadoop.yarn.L" +
+      "ocalResourceProto\"2\n\024StringStringMapProt" +
+      "o\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\"1\n\023StringB" +
+      "ytesMapProto\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\014" +
+      "*?\n\023ContainerStateProto\022\t\n\005C_NEW\020\001\022\r\n\tC_" +
+      "RUNNING\020\002\022\016\n\nC_COMPLETE\020\003*\204\001\n\031YarnApplic",
+      "ationStateProto\022\007\n\003NEW\020\001\022\016\n\nNEW_SAVING\020\002" +
+      "\022\r\n\tSUBMITTED\020\003\022\014\n\010ACCEPTED\020\004\022\013\n\007RUNNING" +
+      "\020\005\022\014\n\010FINISHED\020\006\022\n\n\006FAILED\020\007\022\n\n\006KILLED\020\010" +
+      "*\302\002\n YarnApplicationAttemptStateProto\022\023\n" +
+      "\017APP_ATTEMPT_NEW\020\001\022\031\n\025APP_ATTEMPT_SUBMIT" +
+      "TED\020\002\022\031\n\025APP_ATTEMPT_SCHEDULED\020\003\022 \n\034APP_" +
+      "ATTEMPT_ALLOCATED_SAVING\020\004\022\031\n\025APP_ATTEMP" +
+      "T_ALLOCATED\020\005\022\030\n\024APP_ATTEMPT_LAUNCHED\020\006\022" +
+      "\026\n\022APP_ATTEMPT_FAILED\020\007\022\027\n\023APP_ATTEMPT_R" +
+      "UNNING\020\010\022\031\n\025APP_ATTEMPT_FINISHING\020\t\022\030\n\024A",
+      "PP_ATTEMPT_FINISHED\020\n\022\026\n\022APP_ATTEMPT_KIL" +
+      "LED\020\013*c\n\033FinalApplicationStatusProto\022\021\n\r" +
+      "APP_UNDEFINED\020\000\022\021\n\rAPP_SUCCEEDED\020\001\022\016\n\nAP" +
+      "P_FAILED\020\002\022\016\n\nAPP_KILLED\020\003*H\n\034LocalResou" +
+      "rceVisibilityProto\022\n\n\006PUBLIC\020\001\022\013\n\007PRIVAT" +
+      "E\020\002\022\017\n\013APPLICATION\020\003*<\n\026LocalResourceTyp" +
+      "eProto\022\013\n\007ARCHIVE\020\001\022\010\n\004FILE\020\002\022\013\n\007PATTERN" +
+      "\020\003*s\n\016NodeStateProto\022\n\n\006NS_NEW\020\001\022\016\n\nNS_R" +
+      "UNNING\020\002\022\020\n\014NS_UNHEALTHY\020\003\022\025\n\021NS_DECOMMI" +
+      "SSIONED\020\004\022\013\n\007NS_LOST\020\005\022\017\n\013NS_REBOOTED\020\006*",
+      "0\n\016AMCommandProto\022\r\n\tAM_RESYNC\020\001\022\017\n\013AM_S" +
+      "HUTDOWN\020\002*N\n\032ApplicationAccessTypeProto\022" +
+      "\026\n\022APPACCESS_VIEW_APP\020\001\022\030\n\024APPACCESS_MOD" +
+      "IFY_APP\020\002*/\n\017QueueStateProto\022\r\n\tQ_STOPPE" +
+      "D\020\001\022\r\n\tQ_RUNNING\020\002*H\n\rQueueACLProto\022\034\n\030Q" +
+      "ACL_SUBMIT_APPLICATIONS\020\001\022\031\n\025QACL_ADMINI" +
+      "STER_QUEUE\020\002*[\n\"ReservationRequestInterp" +
+      "reterProto\022\t\n\005R_ANY\020\000\022\t\n\005R_ALL\020\001\022\013\n\007R_OR" +
+      "DER\020\002\022\022\n\016R_ORDER_NO_GAP\020\003*n\n\030ContainerEx" +
+      "itStatusProto\022\013\n\007SUCCESS\020\000\022\024\n\007INVALID\020\230\370",
+      "\377\377\377\377\377\377\377\001\022\024\n\007ABORTED\020\234\377\377\377\377\377\377\377\377\001\022\031\n\014DISKS_" +
+      "FAILED\020\233\377\377\377\377\377\377\377\377\001B0\n\034org.apache.hadoop.y" +
+      "arn.protoB\nYarnProtos\210\001\001\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -46910,7 +47091,7 @@ public final class YarnProtos {
           internal_static_hadoop_yarn_ContainerDetailsProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_yarn_ContainerDetailsProto_descriptor,
-              new java.lang.String[] { "Vmem", "Pmem", "CpuTime", });
+              new java.lang.String[] { "Vmem", "Pmem", "CpuTime", "MemUtilization", "CpuUtilization", });
           internal_static_hadoop_yarn_ContainerProto_descriptor =
             getDescriptor().getMessageTypes().get(9);
           internal_static_hadoop_yarn_ContainerProto_fieldAccessorTable = new

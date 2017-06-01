@@ -93,6 +93,8 @@ public class ContainerImpl implements Container {
   private final StringBuilder diagnostics;
   private boolean wasLaunched;
   private ContainerDetails containerDetails; //added by lxb
+  private long lastCheckTime;
+  private long lastCpuTime = 0;
   /** The NM-wide configuration - not specific to this container */
   private final Configuration daemonConf;
 
@@ -129,6 +131,9 @@ public class ContainerImpl implements Container {
     this.containerDetails.Pmem = 0;
     this.containerDetails.Vmem = 0;
     this.containerDetails.CpuTime = 0;
+    this.containerDetails.CpuUtilization = 0;
+    this.containerDetails.MemUtilization = 0;
+    this.lastCheckTime = System.currentTimeMillis();
     this.diagnostics = new StringBuilder();
     this.credentials = creds;
     this.metrics = metrics;
@@ -157,6 +162,9 @@ public class ContainerImpl implements Container {
     this.containerDetails.Pmem = 0;
     this.containerDetails.Vmem = 0;
     this.containerDetails.CpuTime = 0;
+    this.containerDetails.CpuUtilization = 0;
+    this.containerDetails.MemUtilization = 0;
+    this.lastCheckTime = System.currentTimeMillis();
   }
 
   private static final ContainerDoneTransition CONTAINER_DONE_TRANSITION =
@@ -367,10 +375,24 @@ public class ContainerImpl implements Container {
   
   //added by lxb;
   @Override
-  public void setContainerMemUsage(long Vmem, long Pmem, long CpuTime){
+  public void setContainerUsage(long Vmem, long Pmem, float MemUtilization, long CpuTime, long checkTime){
 	  containerDetails.Vmem = Vmem;
 	  containerDetails.Pmem = Pmem;
 	  containerDetails.CpuTime = CpuTime;
+	  
+      long pmemLimit= getResource().getMemory() * 1024 * 1024L;
+      float pmemRatio = daemonConf.getFloat(
+          YarnConfiguration.NM_VMEM_PMEM_RATIO,
+          YarnConfiguration.DEFAULT_NM_VMEM_PMEM_RATIO);
+      long vmemLimit = (long) (pmemRatio * pmemLimit);
+	  //containerDetails.MemUtilization = Pmem / (float) pmemLimit;
+      containerDetails.MemUtilization = MemUtilization;
+	  
+	  int vCoresNum = daemonConf.getInt(YarnConfiguration.NM_VCORES, YarnConfiguration.DEFAULT_NM_VCORES);
+	  //containerDetails.CpuUtilization = ((CpuTime - lastCpuTime) / (float) (checkTime - lastCheckTime));// / ( resource.getVirtualCores() / (float)vCoresNum);
+	  containerDetails.CpuUtilization = Vmem / (float) vmemLimit;
+	  lastCheckTime = checkTime;
+	  lastCpuTime = CpuTime;
   }
   
   public org.apache.hadoop.yarn.api.records.ContainerDetails getContainerDetails(){

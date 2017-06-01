@@ -82,6 +82,8 @@ message ContainerDetailsProto {
   optional int64 Vmem = 1;
   optional int64 Pmem = 2;
   optional int64 CpuTime = 3;
+  optional int64 MemUtilization = 4;
+  optional int64 CpuUtilization = 5;
 }
 
 message ContainerProto {

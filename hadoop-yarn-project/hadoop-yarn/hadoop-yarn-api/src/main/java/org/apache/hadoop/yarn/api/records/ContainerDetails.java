@@ -9,6 +9,10 @@ public class ContainerDetails {
 	
 	public long CpuTime;
 	
+	public float MemUtilization;
+	
+	public float CpuUtilization;
+	
 	//CPU
 	
 	//NetWork
