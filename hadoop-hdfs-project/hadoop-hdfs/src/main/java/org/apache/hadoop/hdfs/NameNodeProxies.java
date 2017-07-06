@@ -41,6 +41,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hdfs.DFSClient.Conf;
 import org.apache.hadoop.hdfs.protocol.ClientProtocol;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
@@ -167,13 +168,46 @@ public class NameNodeProxies {
   public static <T> ProxyAndInfo<T> createProxy(Configuration conf,
       URI nameNodeUri, Class<T> xface, AtomicBoolean fallbackToSimpleAuth)
       throws IOException {
+	  
+	  String scheme = nameNodeUri.getScheme();
+	  String authority = nameNodeUri.getAuthority();
+	  if (authority == null) {
+	      throw new IllegalArgumentException(String.format(
+	          "Invalid URI for NameNode address (check %s): %s has no authority.",
+	          FileSystem.FS_DEFAULT_NAME_KEY, nameNodeUri.toString()));
+	    }
+
+	  Map<String, String> remoteFs = NameNode.getRemoteHdfs(conf);
+	  InetSocketAddress nameNodeAddress;
+	  if(scheme.startsWith(HdfsConstants.HDFS_URI_SCHEME) 
+			  && !scheme.equalsIgnoreCase(HdfsConstants.HDFS_URI_SCHEME)){
+		  
+		  if(!remoteFs.containsKey(scheme)){
+			  LOG.info("remoteHdfs not in map");
+			  throw new IllegalArgumentException(String.format(
+					  "Undefined Hdfs:  %s'.", nameNodeUri));
+		  }else{
+			  LOG.info("remoteHdfs in map");
+			  String addr =  remoteFs.get(scheme);
+			  int idx = addr.indexOf(":");
+			  String remoteHost = addr.substring(0, idx);
+			 int  remotePort = Integer.parseInt(addr.substring(idx + 1)) ;
+			  LOG.info("remoteHdfs: " + scheme + " host: " + remoteHost + " port: " + remotePort);  
+			  nameNodeAddress = NameNode.getRemoteAddress(remoteHost, remotePort);
+		  }
+		  
+	  }else {
+		  nameNodeAddress = NameNode.getAddress(nameNodeUri);
+	}
+	  
     AbstractNNFailoverProxyProvider<T> failoverProxyProvider =
         createFailoverProxyProvider(conf, nameNodeUri, xface, true,
           fallbackToSimpleAuth);
-  
+    LOG.info("nameNodeUri in createProxy: "+ nameNodeUri.toString()); // to remove hdfs://master:9000
+    LOG.info("nameNodeAddr in createProxy: "+nameNodeAddress.toString()); // to remove master/10.0.0.22:9000
     if (failoverProxyProvider == null) {
       // Non-HA case
-      return createNonHAProxy(conf, NameNode.getAddress(nameNodeUri), xface,
+      return createNonHAProxy(conf, nameNodeAddress, xface,
           UserGroupInformation.getCurrentUser(), true, fallbackToSimpleAuth);
     } else {
       // HA case
@@ -189,11 +223,9 @@ public class NameNodeProxies {
         dtService = HAUtil.buildTokenServiceForLogicalUri(nameNodeUri,
             HdfsConstants.HDFS_URI_SCHEME);
       } else {
-        dtService = SecurityUtil.buildTokenService(
-            NameNode.getAddress(nameNodeUri));
+        dtService = SecurityUtil.buildTokenService(nameNodeAddress);
       }
-      return new ProxyAndInfo<T>(proxy, dtService,
-          NameNode.getAddress(nameNodeUri));
+      return new ProxyAndInfo<T>(proxy, dtService, nameNodeAddress);
     }
   }
   

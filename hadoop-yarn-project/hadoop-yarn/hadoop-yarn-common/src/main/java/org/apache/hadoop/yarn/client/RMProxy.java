@@ -41,6 +41,7 @@ import org.apache.hadoop.io.retry.RetryPolicy;
 import org.apache.hadoop.io.retry.RetryProxy;
 import org.apache.hadoop.ipc.RetriableException;
 import org.apache.hadoop.net.ConnectTimeoutException;
+import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.yarn.conf.HAUtil;
@@ -75,6 +76,12 @@ public class RMProxy<T> {
     throw new UnsupportedOperationException("This method should be invoked " +
         "from an instance of ClientRMProxy or ServerRMProxy");
   }
+  
+  protected InetSocketAddress getRMAddressRemote(
+	      YarnConfiguration conf, Class<?> protocol) throws IOException {
+	    throw new UnsupportedOperationException("This method (getRMAddressRemote) should be invoked " +
+	        "from an instance of ClientRMProxy or ServerRMProxy");
+	  }
 
   /**
    * Create a proxy for the specified protocol. For non-HA,
@@ -98,6 +105,27 @@ public class RMProxy<T> {
       LOG.info("Connecting to ResourceManager at " + rmAddress);
       T proxy = RMProxy.<T>getProxy(conf, protocol, rmAddress);
       return (T) RetryProxy.create(protocol, proxy, retryPolicy);
+    }
+  }
+  
+  //TODO
+  //add by lxb, for test
+  @Private
+  protected static <T> T createRMProxyRemote(final Configuration configuration,
+      final Class<T> protocol, RMProxy instance) throws IOException {
+    YarnConfiguration conf = (configuration instanceof YarnConfiguration)
+        ? (YarnConfiguration) configuration
+        : new YarnConfiguration(configuration);
+    RetryPolicy retryPolicy = createRetryPolicy(conf);
+    if (HAUtil.isHAEnabled(conf)) {
+      RMFailoverProxyProvider<T> provider =
+          instance.createRMFailoverProxyProvider(conf, protocol);
+      return (T) RetryProxy.create(protocol, provider, retryPolicy);
+    } else {
+    	InetSocketAddress rmAddress = instance.getRMAddressRemote(conf, protocol);
+    	LOG.info("Connecting to Remote ResourceManager at " + rmAddress);
+    	T proxy = RMProxy.<T>getProxy(conf, protocol, rmAddress);
+    	return (T) RetryProxy.create(protocol, proxy, retryPolicy);
     }
   }
 

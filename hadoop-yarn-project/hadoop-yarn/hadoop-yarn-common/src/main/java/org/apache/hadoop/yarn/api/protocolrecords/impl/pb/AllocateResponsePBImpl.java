@@ -280,6 +280,7 @@ public class AllocateResponsePBImpl extends AllocateResponse {
 
   @Override
   public synchronized void setNMTokens(List<NMToken> nmTokens) {
+	  maybeInitBuilder(); // added by lxb
     if (nmTokens == null || nmTokens.isEmpty()) {
       if (this.nmTokens != null) {
         this.nmTokens.clear();

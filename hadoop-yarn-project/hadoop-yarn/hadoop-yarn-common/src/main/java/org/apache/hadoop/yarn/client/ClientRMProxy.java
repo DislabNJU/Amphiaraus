@@ -69,8 +69,17 @@ public class ClientRMProxy<T> extends RMProxy<T>  {
    */
   public static <T> T createRMProxy(final Configuration configuration,
       final Class<T> protocol) throws IOException {
+	  LOG.info("starting createRMProxy");
     return createRMProxy(configuration, protocol, INSTANCE);
   }
+  
+  //TODO
+  //add by lxb, for test
+  public static <T> T createRMProxyRemote(final Configuration configuration,
+	      final Class<T> protocol) throws IOException {
+	  LOG.info("starting createRMProxyRemote");
+	    return createRMProxyRemote(configuration, protocol, INSTANCE);
+	  }
 
   private static void setAMRMTokenService(final Configuration conf)
       throws IOException {
@@ -81,6 +90,16 @@ public class ClientRMProxy<T> extends RMProxy<T>  {
       }
     }
   }
+  
+  private static void setAMRMTokenServiceRemote(final Configuration conf)
+	      throws IOException {
+	    for (Token<? extends TokenIdentifier> token : UserGroupInformation
+	      .getCurrentUser().getTokens()) {
+	      if (token.getKind().equals(AMRMTokenIdentifier.KIND_NAME)) {
+	        token.setService(getAMRMTokenServiceRemote(conf));
+	      }
+	    }
+	  }
 
   @Private
   @Override
@@ -108,6 +127,29 @@ public class ClientRMProxy<T> extends RMProxy<T>  {
       throw new IllegalStateException(message);
     }
   }
+  
+  @Private
+  @Override
+  protected InetSocketAddress getRMAddressRemote(YarnConfiguration conf,
+		  Class<?> protocol) throws IOException {
+	    if (protocol == ApplicationClientProtocol.class) {
+	        return conf.getSocketAddr("yarn.remoteresourcemanager.address",
+	            "slave-2-5:8032",
+	            YarnConfiguration.DEFAULT_RM_PORT);
+	      } else  if (protocol == ApplicationMasterProtocol.class) {
+		  setAMRMTokenServiceRemote(conf);
+		  return conf.getSocketAddr("yarn.remoteresourcemanager.scheduler.address",
+				  "slave-2-5:8030",
+				  YarnConfiguration.DEFAULT_RM_SCHEDULER_PORT);
+	  } else {
+		  String message = "Unsupported protocol found when creating the proxy " +
+				  "connection to ResourceManager: " +
+				  ((protocol != null) ? protocol.getClass().getName() : "null");
+		  LOG.error(message);
+		  throw new IllegalStateException(message);
+	  }
+  }
+  
 
   @Private
   @Override
@@ -139,6 +181,13 @@ public class ClientRMProxy<T> extends RMProxy<T>  {
             YarnConfiguration.DEFAULT_RM_SCHEDULER_ADDRESS,
             YarnConfiguration.DEFAULT_RM_SCHEDULER_PORT);
   }
+  
+  
+  public static Text getAMRMTokenServiceRemote(Configuration conf) {
+	    return getTokenService(conf, "yarn.remoteresourcemanager.scheduler.address",
+	            "slave-2-5:8030",
+	            YarnConfiguration.DEFAULT_RM_SCHEDULER_PORT);
+	  }
 
   @Unstable
   public static Text getTokenService(Configuration conf, String address,

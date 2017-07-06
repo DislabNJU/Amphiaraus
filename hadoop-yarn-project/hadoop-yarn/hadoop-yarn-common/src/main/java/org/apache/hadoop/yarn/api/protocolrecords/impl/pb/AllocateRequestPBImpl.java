@@ -26,14 +26,17 @@ import java.util.List;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.yarn.api.protocolrecords.AllocateRequest;
+import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.ContainerResourceIncreaseRequest;
 import org.apache.hadoop.yarn.api.records.ResourceBlacklistRequest;
 import org.apache.hadoop.yarn.api.records.ResourceRequest;
+import org.apache.hadoop.yarn.api.records.impl.pb.ApplicationAttemptIdPBImpl;
 import org.apache.hadoop.yarn.api.records.impl.pb.ContainerIdPBImpl;
 import org.apache.hadoop.yarn.api.records.impl.pb.ContainerResourceIncreaseRequestPBImpl;
 import org.apache.hadoop.yarn.api.records.impl.pb.ResourceBlacklistRequestPBImpl;
 import org.apache.hadoop.yarn.api.records.impl.pb.ResourceRequestPBImpl;
+import org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto;
 import org.apache.hadoop.yarn.proto.YarnProtos.ContainerIdProto;
 import org.apache.hadoop.yarn.proto.YarnProtos.ContainerResourceIncreaseRequestProto;
 import org.apache.hadoop.yarn.proto.YarnProtos.ResourceBlacklistRequestProto;
@@ -54,6 +57,9 @@ public class AllocateRequestPBImpl extends AllocateRequest {
   private List<ContainerId> release = null;
   private List<ContainerResourceIncreaseRequest> increaseRequests = null;
   private ResourceBlacklistRequest blacklistRequest = null;
+  
+  private ApplicationAttemptId applicationAttemptId;
+  //private boolean isUMS;
   
   public AllocateRequestPBImpl() {
     builder = AllocateRequestProto.newBuilder();
@@ -104,6 +110,9 @@ public class AllocateRequestPBImpl extends AllocateRequest {
     if (this.blacklistRequest != null) {
       builder.setBlacklistRequest(convertToProtoFormat(this.blacklistRequest));
     }
+    if (this.applicationAttemptId != null) {
+        builder.setApplicationAttemptId(convertToProtoFormat(this.applicationAttemptId));
+      }
   }
 
   private void mergeLocalToProto() {
@@ -200,6 +209,40 @@ public class AllocateRequestPBImpl extends AllocateRequest {
     this.blacklistRequest = blacklistRequest;
   }
 
+  @Override
+  public  void setApplicationAttemptId(
+		  ApplicationAttemptId appAttemptId){
+	    maybeInitBuilder();
+	    if (appAttemptId == null) {
+	    	builder.clearApplicationAttemptId();
+	      return;
+	    }
+	    this.applicationAttemptId = appAttemptId;
+  }
+  
+  @Override
+  public  ApplicationAttemptId getApplicationAttemptId(){
+	    AllocateRequestProtoOrBuilder p = viaProto ? proto : builder;
+	    if (this.applicationAttemptId != null) {
+	      return this.applicationAttemptId;
+	    }
+	    if (!p.hasApplicationAttemptId()) {
+	        return null;
+	      }
+	    this.applicationAttemptId = convertFromProtoFormat(p.getApplicationAttemptId());
+	    return this.applicationAttemptId;
+  }
+  
+  public  void setUMS(boolean UMS){
+	    maybeInitBuilder();
+	    builder.setIsUMS(UMS);
+  }
+  
+  public  boolean getUMS(){
+	    AllocateRequestProtoOrBuilder p = viaProto ? proto : builder;
+	    return p.getIsUMS();
+  }
+  
   private void initAsks() {
     if (this.ask != null) {
       return;
@@ -392,4 +435,12 @@ public class AllocateRequestPBImpl extends AllocateRequest {
   private ResourceBlacklistRequestProto convertToProtoFormat(ResourceBlacklistRequest t) {
     return ((ResourceBlacklistRequestPBImpl)t).getProto();
   }
+  
+  private ApplicationAttemptIdPBImpl convertFromProtoFormat(ApplicationAttemptIdProto p) {
+	    return new ApplicationAttemptIdPBImpl(p);
+	  }
+
+	  private ApplicationAttemptIdProto convertToProtoFormat(ApplicationAttemptId t) {
+	    return ((ApplicationAttemptIdPBImpl)t).getProto();
+	  }
 }  

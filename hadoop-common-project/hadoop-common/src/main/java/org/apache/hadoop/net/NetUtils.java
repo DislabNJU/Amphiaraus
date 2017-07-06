@@ -206,6 +206,10 @@ public class NetUtils {
     }
     String path = uri.getPath();
     
+    //LOG.info("host in createSocketAddr: " + host); // to remove
+    //LOG.info("port in createSocketAddr: " + port); // to remove
+    //LOG.info("path in createSocketAddr: " + path); // to remove
+    
     if ((host == null) || (port < 0) ||
         (!hasScheme && path != null && !path.isEmpty()))
     {
@@ -231,18 +235,27 @@ public class NetUtils {
     String staticHost = getStaticResolution(host);
     String resolveHost = (staticHost != null) ? staticHost : host;
     
+    //LOG.info("host in createSocketAddrForHost: " + host); // to remove
+    //LOG.info("staticHost in createSocketAddrForHost: " + staticHost); // to remove
+    //LOG.info("resolveHost in createSocketAddrForHost: " + resolveHost); // to remove
+    
     InetSocketAddress addr;
     try {
       InetAddress iaddr = SecurityUtil.getByName(resolveHost);
       // if there is a static entry for the host, make the returned
       // address look like the original given host
+      //LOG.info("iaddr in createSocketAddrForHost: " + iaddr.toString()); // to remove
       if (staticHost != null) {
         iaddr = InetAddress.getByAddress(host, iaddr.getAddress());
+        //LOG.info("iaddrNew in createSocketAddrForHost: " + iaddr.toString()); // to remove
       }
       addr = new InetSocketAddress(iaddr, port);
     } catch (UnknownHostException e) {
       addr = InetSocketAddress.createUnresolved(host, port);
     }
+
+    LOG.info("addr in createSocketAddrForHost: " + addr.toString()); // to remove
+    
     return addr;
   }
   

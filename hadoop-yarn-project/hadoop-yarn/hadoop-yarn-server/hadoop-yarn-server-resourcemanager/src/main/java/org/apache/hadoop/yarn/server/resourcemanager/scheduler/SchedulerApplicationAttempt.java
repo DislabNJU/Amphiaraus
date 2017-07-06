@@ -199,6 +199,9 @@ public class SchedulerApplicationAttempt {
   }
 
   public synchronized int getTotalRequiredResources(Priority priority) {
+	  if(getResourceRequest(priority, ResourceRequest.ANY) == null){
+		  return 0;
+	  }
     return getResourceRequest(priority, ResourceRequest.ANY).getNumContainers();
   }
 
@@ -392,15 +395,15 @@ public class SchedulerApplicationAttempt {
   }
   
   public synchronized void showRequests() {
-    if (LOG.isDebugEnabled()) {
+    if (true || LOG.isDebugEnabled()) {
       for (Priority priority : getPriorities()) {
         Map<String, ResourceRequest> requests = getResourceRequests(priority);
         if (requests != null) {
-          LOG.debug("showRequests:" + " application=" + getApplicationId() + 
+          LOG.info("showRequests:" + " application=" + getApplicationId() + 
               " headRoom=" + getHeadroom() + 
               " currentConsumption=" + currentConsumption.getMemory());
           for (ResourceRequest request : requests.values()) {
-            LOG.debug("showRequests:" + " application=" + getApplicationId()
+            LOG.info("showRequests:" + " application=" + getApplicationId()
                 + " request=" + request);
           }
         }
@@ -439,11 +442,14 @@ public class SchedulerApplicationAttempt {
     List<Container> returnContainerList =
         new ArrayList<Container>(newlyAllocatedContainers.size());
     List<NMToken> nmTokens = new ArrayList<NMToken>();
+    LOG.info("newlyAllocatedContainersSize: " + newlyAllocatedContainers.size() );
     for (Iterator<RMContainer> i = newlyAllocatedContainers.iterator(); i
       .hasNext();) {
+
       RMContainer rmContainer = i.next();
       Container container = rmContainer.getContainer();
       try {
+      	LOG.info("creating container on host: " + container.getNodeId().getHost());
         // create container token and NMToken altogether.
         container.setContainerToken(rmContext.getContainerTokenSecretManager()
           .createContainerToken(container.getId(), container.getNodeId(),

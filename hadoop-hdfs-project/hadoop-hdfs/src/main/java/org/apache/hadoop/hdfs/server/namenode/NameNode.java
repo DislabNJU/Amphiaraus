@@ -21,13 +21,16 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion.Static;
 
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.HadoopIllegalArgumentException;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.ha.HAServiceProtocol.HAServiceState;
 import org.apache.hadoop.ha.HAServiceProtocol.StateChangeRequestInfo;
@@ -67,6 +70,8 @@ import org.apache.hadoop.util.JvmPauseMonitor;
 import org.apache.hadoop.util.ServicePlugin;
 import org.apache.hadoop.util.StringUtils;
 
+import sun.tools.tree.ThisExpression;
+
 import javax.management.ObjectName;
 
 import java.io.IOException;
@@ -77,7 +82,9 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY;
@@ -384,6 +391,10 @@ public class NameNode implements NameNodeStatusMXBean {
     return NetUtils.createSocketAddr(address, DEFAULT_PORT);
   }
   
+  public  static InetSocketAddress getRemoteAddress(String host, int port){
+	  return NetUtils.createSocketAddrForHost(host,  port);
+  }
+  
   /**
    * Set the configuration property for the service rpc address
    * to address
@@ -420,20 +431,20 @@ public class NameNode implements NameNodeStatusMXBean {
    * @return address of file system
    */
   public static InetSocketAddress getAddress(URI filesystemURI) {
-    String authority = filesystemURI.getAuthority();
-    if (authority == null) {
-      throw new IllegalArgumentException(String.format(
-          "Invalid URI for NameNode address (check %s): %s has no authority.",
-          FileSystem.FS_DEFAULT_NAME_KEY, filesystemURI.toString()));
-    }
-    if (!HdfsConstants.HDFS_URI_SCHEME.equalsIgnoreCase(
-        filesystemURI.getScheme())) {
-      throw new IllegalArgumentException(String.format(
-          "Invalid URI for NameNode address (check %s): %s is not of scheme '%s'.",
-          FileSystem.FS_DEFAULT_NAME_KEY, filesystemURI.toString(),
-          HdfsConstants.HDFS_URI_SCHEME));
-    }
-    return getAddress(authority);
+	  String authority = filesystemURI.getAuthority();
+	    if (authority == null) {
+	      throw new IllegalArgumentException(String.format(
+	          "Invalid URI for NameNode address (check %s): %s has no authority.",
+	          FileSystem.FS_DEFAULT_NAME_KEY, filesystemURI.toString()));
+	    }
+	    if (!HdfsConstants.HDFS_URI_SCHEME.equalsIgnoreCase(
+	        filesystemURI.getScheme())) {
+	      throw new IllegalArgumentException(String.format(
+	          "Invalid URI for NameNode address (check %s): %s is not of scheme '%s'.",
+	          FileSystem.FS_DEFAULT_NAME_KEY, filesystemURI.toString(),
+	          HdfsConstants.HDFS_URI_SCHEME));
+	    }
+	return getAddress(authority);
   }
 
   public static URI getUri(InetSocketAddress namenode) {
@@ -1495,9 +1506,24 @@ public class NameNode implements NameNodeStatusMXBean {
     return DFSUtil.getNamenodeNameServiceId(conf);
   }
   
+  public static Map<String, String>getRemoteHdfs(Configuration config){
+	  Map<String, String> remoteFs = new HashMap<String, String>();
+	  String fsStr = config.get("fs.remoteFs", "null");
+	  if(!fsStr.equals("null")){
+		  String[] fses = fsStr.split(",");
+		  for(String fs : fses){
+			  int idx = fs.indexOf(":");
+			  remoteFs.put(fs.substring(0, idx), fs.substring(idx + 3));
+		  }
+	  }
+	  LOG.info("remoteFs: " + remoteFs.toString());
+	  return remoteFs;
+  }
+  
   /**
    */
   public static void main(String argv[]) throws Exception {
+	  
     if (DFSUtil.parseHelpArgument(argv, NameNode.USAGE, System.out, true)) {
       System.exit(0);
     }
@@ -1512,6 +1538,23 @@ public class NameNode implements NameNodeStatusMXBean {
       LOG.fatal("Failed to start namenode.", e);
       terminate(1, e);
     }
+    
+	  
+    //test
+	  /*
+	//remoteHdfs.put("hdfs1", "172.25.42.104:9000");
+	  String tmp = "hdfs1://172.25.42.104:9000/tpch1/lineitem/lineitem.tbl";
+	  Path tmPath =  new Path(StringUtils.unEscapeString(tmp));
+	  System.out.println(tmPath.toUri().getScheme());
+
+	  String addr = tmPath.toUri().getAuthority();
+	  int idx = addr.indexOf(":");
+	  String host = addr.substring(0, idx);
+	  int port = Integer.parseInt(addr.substring(idx + 1)) ;
+	  System.out.println("remoteHdfs: " + tmPath.toUri().getScheme() + " host: " + host + " port: " + port);
+	  System.out.println("test in getSplits: " + NetUtils.createSocketAddrForHost(host,  port));
+	  */
+    //test
   }
 
   synchronized void monitorHealth() 

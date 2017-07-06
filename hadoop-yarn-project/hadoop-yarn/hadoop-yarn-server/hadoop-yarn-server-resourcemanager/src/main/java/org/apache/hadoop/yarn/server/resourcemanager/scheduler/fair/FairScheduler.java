@@ -869,7 +869,7 @@ public class FairScheduler extends
     // Make sure this application exists
     FSAppAttempt application = getSchedulerApp(appAttemptId);
     if (application == null) {
-      LOG.info("Calling allocate on removed " +
+      LOG.info("Calling allocate on removed " +	
           "or non existant application " + appAttemptId);
       return EMPTY_ALLOCATION;
     }
@@ -882,6 +882,7 @@ public class FairScheduler extends
     if (!application.getUnmanagedAM() && ask.size() == 1
         && application.getLiveContainers().isEmpty()) {
       application.setAMResource(ask.get(0).getCapability());
+      LOG.info("getCapability(): " + ask.get(0).getCapability().toString());
     }
 
     // Release containers
@@ -889,8 +890,8 @@ public class FairScheduler extends
 
     synchronized (application) {
       if (!ask.isEmpty()) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("allocate: pre-update" +
+        if (true || LOG.isDebugEnabled()) {
+          LOG.info("allocate: pre-update" +
               " applicationAttemptId=" + appAttemptId +
               " application=" + application.getApplicationId());
         }
@@ -962,6 +963,7 @@ public class FairScheduler extends
         attemptScheduling(node);
       }
     } else {
+    	//LOG.info("attemptScheduling2");
       attemptScheduling(node);
     }
 
@@ -1018,6 +1020,7 @@ public class FairScheduler extends
   private synchronized void attemptScheduling(FSSchedulerNode node) {
     if (rmContext.isWorkPreservingRecoveryEnabled()
         && !rmContext.isSchedulerReadyForAllocatingContainers()) {
+    	LOG.info("attemptScheduling return");
       return;
     }
 
@@ -1043,7 +1046,7 @@ public class FairScheduler extends
               + " on node: " + node);
         }
         
-        node.getReservedAppSchedulable().assignReservedContainer(node);
+        node.getReservedAppSchedulable().assignReservedContainer(node); 
       }
     }
     if (reservedAppSchedulable == null) {
@@ -1051,7 +1054,7 @@ public class FairScheduler extends
       int assignedContainers = 0;
       while (node.getReservedContainer() == null) {
         boolean assignedContainer = false;
-        if (!queueMgr.getRootQueue().assignContainer(node).equals(
+        if (!queueMgr.getRootQueue().assignContainer(node).equals( // here
             Resources.none())) {
           assignedContainers++;
           assignedContainer = true;

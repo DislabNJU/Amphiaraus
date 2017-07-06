@@ -96,6 +96,12 @@ public class RackResolver {
   }
   
   private static Node coreResolve(String hostName) {
+	  
+  	if(hostName.contains("hdfs")){
+		int idx = hostName.indexOf(":");
+		hostName = hostName.substring(idx + 3);
+		}
+  	
     List <String> tmpList = new ArrayList<String>(1);
     tmpList.add(hostName);
     List <String> rNameList = dnsToSwitchMapping.resolve(tmpList);

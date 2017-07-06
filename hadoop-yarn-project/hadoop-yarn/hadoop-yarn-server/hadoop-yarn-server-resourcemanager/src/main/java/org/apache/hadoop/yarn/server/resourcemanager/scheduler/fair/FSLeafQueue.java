@@ -259,7 +259,7 @@ public class FSLeafQueue extends FSQueue {
           continue;
         }
 
-        assigned = sched.assignContainer(node);
+        assigned = sched.assignContainer(node); // here
         if (!assigned.equals(Resources.none())) {
           break;
         }

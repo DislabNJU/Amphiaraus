@@ -50,6 +50,12 @@ public class ServerRMProxy<T> extends RMProxy<T> {
       final Class<T> protocol) throws IOException {
     return createRMProxy(configuration, protocol, INSTANCE);
 }
+  
+  // to remove
+  public static <T> T createRMProxyRemote(final Configuration configuration,
+	      final Class<T> protocol) throws IOException {
+	    return createRMProxyRemote(configuration, protocol, INSTANCE);
+	}
 
   @InterfaceAudience.Private
   @Override

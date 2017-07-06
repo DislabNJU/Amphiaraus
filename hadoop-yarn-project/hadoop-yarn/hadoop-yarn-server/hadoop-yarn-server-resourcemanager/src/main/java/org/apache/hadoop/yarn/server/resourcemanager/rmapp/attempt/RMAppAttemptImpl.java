@@ -60,8 +60,10 @@ import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.ResourceRequest;
 import org.apache.hadoop.yarn.api.records.YarnApplicationAttemptState;
 import org.apache.hadoop.yarn.event.EventHandler;
+import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.factories.RecordFactory;
 import org.apache.hadoop.yarn.factory.providers.RecordFactoryProvider;
+import org.apache.hadoop.yarn.ipc.RPCUtil;
 import org.apache.hadoop.yarn.security.AMRMTokenIdentifier;
 import org.apache.hadoop.yarn.security.client.ClientToAMTokenIdentifier;
 import org.apache.hadoop.yarn.server.resourcemanager.ApplicationMasterService;
@@ -1291,7 +1293,7 @@ public class RMAppAttemptImpl implements RMAppAttempt, Recoverable {
       appAttempt.amrmToken =
           appAttempt.rmContext.getAMRMTokenSecretManager().createAndGetAMRMToken(
             appAttempt.applicationAttemptId);
-
+      
       super.transition(appAttempt, event);
     }    
   }

@@ -139,8 +139,8 @@ public class AppSchedulingInfo {
       ResourceRequest lastRequest = null;
 
       if (resourceName.equals(ResourceRequest.ANY)) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("update:" + " application=" + applicationId + " request="
+        if (true || LOG.isDebugEnabled()) {
+          LOG.info("update:" + " application=" + applicationId + " request="
               + request);
         }
         updatePendingResources = true;
@@ -151,6 +151,7 @@ public class AppSchedulingInfo {
         // to activate same application more than once.
         // Thus we don't need another loop ala the one in decrementOutstanding()  
         // which is needed during deactivate.
+        LOG.info("getNumContainers() in AppSchedulingInfo: " + request.getNumContainers() );
         if (request.getNumContainers() > 0) {
           activeUsersManager.activateApplication(user, applicationId);
         }
@@ -172,6 +173,7 @@ public class AppSchedulingInfo {
       }
 
       asks.put(resourceName, request);
+      LOG.info("updatePendingResources in AppSchedulingInfo: " + updatePendingResources);
       if (updatePendingResources) {
         
         // Similarly, deactivate application?

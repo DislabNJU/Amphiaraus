@@ -391,8 +391,10 @@ public abstract class AbstractYarnScheduler
         for (SchedulerApplication<T> app : applications.values()) {
 
           T attempt = app.getCurrentAppAttempt();
+          LOG.info("attemp in createReleaseCache: " + attempt.getApplicationAttemptId().toString()); // to remove
           synchronized (attempt) {
             for (ContainerId containerId : attempt.getPendingRelease()) {
+            	LOG.info("containerId in createReleaseCache: " + containerId.toString()); // to remove
               RMAuditLogger.logFailure(
                 app.getUser(),
                 AuditConstants.RELEASE_CONTAINER,

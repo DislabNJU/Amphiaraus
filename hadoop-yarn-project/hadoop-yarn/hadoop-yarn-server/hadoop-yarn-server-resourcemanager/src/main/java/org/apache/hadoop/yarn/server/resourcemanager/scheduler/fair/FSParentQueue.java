@@ -170,8 +170,8 @@ public class FSParentQueue extends FSQueue {
 
     Collections.sort(childQueues, policy.getComparator());
     for (FSQueue child : childQueues) {
-      assigned = child.assignContainer(node);
-      if (!Resources.equals(assigned, Resources.none())) {
+      assigned = child.assignContainer(node); // here
+      if (!Resources.equals(assigned, Resources.none())) { 
         break;
       }
     }

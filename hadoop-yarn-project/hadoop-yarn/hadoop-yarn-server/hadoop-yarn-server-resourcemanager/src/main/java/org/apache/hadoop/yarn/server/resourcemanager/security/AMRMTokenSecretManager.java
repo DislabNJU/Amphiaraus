@@ -20,7 +20,9 @@ package org.apache.hadoop.yarn.server.resourcemanager.security;
 
 import java.io.IOException;
 import java.security.SecureRandom;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -74,6 +76,8 @@ public class AMRMTokenSecretManager extends
 
   private final Set<ApplicationAttemptId> appAttemptSet =
       new HashSet<ApplicationAttemptId>();
+  
+  private Map<ApplicationAttemptId, AMRMTokenIdentifier> remoteAMRMTokenMap;
 
   /**
    * Create an {@link AMRMTokenSecretManager}
@@ -102,20 +106,21 @@ public class AMRMTokenSecretManager extends
   }
 
   public void start() {
-    if (this.currentMasterKey == null) {
-      this.currentMasterKey = createNewMasterKey();
-      AMRMTokenSecretManagerState state =
-          AMRMTokenSecretManagerState.newInstance(
-            this.currentMasterKey.getMasterKey(), null);
-      rmContext.getStateStore().storeOrUpdateAMRMTokenSecretManagerState(state,
-        false);
-    }
-    this.timer.scheduleAtFixedRate(new MasterKeyRoller(), rollingInterval,
-      rollingInterval);
+	  remoteAMRMTokenMap = new HashMap<ApplicationAttemptId, AMRMTokenIdentifier>();
+	  if (this.currentMasterKey == null) {
+		  this.currentMasterKey = createNewMasterKey();
+		  AMRMTokenSecretManagerState state =
+				  AMRMTokenSecretManagerState.newInstance(
+						  this.currentMasterKey.getMasterKey(), null);
+		  rmContext.getStateStore().storeOrUpdateAMRMTokenSecretManagerState(state,
+				  false);
+	  }
+	  this.timer.scheduleAtFixedRate(new MasterKeyRoller(), rollingInterval,
+			  rollingInterval);
   }
 
   public void stop() {
-    this.timer.cancel();
+	  this.timer.cancel();
   }
 
   public void applicationMasterFinished(ApplicationAttemptId appAttemptId) {
@@ -192,7 +197,7 @@ public class AMRMTokenSecretManager extends
       ApplicationAttemptId appAttemptId) {
     this.writeLock.lock();
     try {
-      LOG.info("Create AMRMToken for ApplicationAttempt: " + appAttemptId);
+      LOG.info("Create AMRMToken for ApplicationAttempt: " + appAttemptId.toString());
       AMRMTokenIdentifier identifier =
           new AMRMTokenIdentifier(appAttemptId, getMasterKey().getMasterKey()
             .getKeyId());
@@ -241,27 +246,68 @@ public class AMRMTokenSecretManager extends
       throws InvalidToken {
     this.readLock.lock();
     try {
+    	AMRMTokenIdentifier resolveIdentifier = identifier;
       ApplicationAttemptId applicationAttemptId =
           identifier.getApplicationAttemptId();
+      LOG.info("receive appatp: " + applicationAttemptId.toString());
+      
       if (LOG.isDebugEnabled()) {
         LOG.debug("Trying to retrieve password for " + applicationAttemptId);
       }
-      if (!appAttemptSet.contains(applicationAttemptId)) {
-        throw new InvalidToken(applicationAttemptId
-            + " not found in AMRMTokenSecretManager.");
+      
+      /*
+      // if it's a remote AM and visited before
+      if(remoteAMRMTokenMap.containsKey(applicationAttemptId)){
+    	  LOG.info("remote app visited before: : " + applicationAttemptId.toString());  
+    	  resolveIdentifier = remoteAMRMTokenMap.get(applicationAttemptId);
       }
-      if (identifier.getKeyId() == this.currentMasterKey.getMasterKey()
+       */
+
+      // if it's a remote AM and never visit before
+      if (!appAttemptSet.contains(applicationAttemptId)) {
+    	  //create a local identifier for it and put it into a map 
+    	  //which contains the related remote applicationAttemptId and local identifier;
+    	  //next time it comes, get it's local identifier according to the map;
+    	  /*
+    	  LOG.info("remote app first visit:  " + applicationAttemptId.toString());
+    	  this.readLock.unlock();
+    	  LOG.info("unlock" );
+    	  Token<AMRMTokenIdentifier> remoteAMRMToken = createAndGetAMRMToken(applicationAttemptId);
+    	  LOG.info("relock" );
+    	  this.readLock.lock();
+    	  LOG.info("create token for it:  " + remoteAMRMToken.toString());
+
+    	  AMRMTokenIdentifier remoteIdentifier;
+    	  remoteIdentifier = remoteAMRMToken.decodeIdentifier();
+    	  LOG.info("decodeIdentifier for it:  " + remoteIdentifier.toString());
+
+    	  remoteAMRMTokenMap.put(applicationAttemptId, remoteIdentifier);
+    	  resolveIdentifier = remoteIdentifier;
+    	   */
+    	  throw new InvalidToken(applicationAttemptId
+    			  + " not found in AMRMTokenSecretManager.");
+      }
+      
+      //Auth failed for
+      if (resolveIdentifier.getKeyId() == this.currentMasterKey.getMasterKey()
         .getKeyId()) {
-        return createPassword(identifier.getBytes(),
+    	  LOG.info("tag1 in if");
+        return createPassword(resolveIdentifier.getBytes(),
           this.currentMasterKey.getSecretKey());
       } else if (nextMasterKey != null
-          && identifier.getKeyId() == this.nextMasterKey.getMasterKey()
+          && resolveIdentifier.getKeyId() == this.nextMasterKey.getMasterKey()
             .getKeyId()) {
-        return createPassword(identifier.getBytes(),
+    	  LOG.info("tag2 in else if");
+        return createPassword(resolveIdentifier.getBytes(),
           this.nextMasterKey.getSecretKey());
       }
       throw new InvalidToken("Invalid AMRMToken from " + applicationAttemptId);
-    } finally {
+    } catch (IOException e) {
+		// TODO Auto-generated catch block
+    	 LOG.info("tag3 in catch");
+		e.printStackTrace();
+		throw new InvalidToken("Invalid AMRMToken from "+ identifier.getApplicationAttemptId());
+	} finally {
       this.readLock.unlock();
     }
   }

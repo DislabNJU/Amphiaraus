@@ -54,4 +54,5 @@ service ApplicationClientProtocolService {
   rpc deleteReservation (ReservationDeleteRequestProto) returns (ReservationDeleteResponseProto);
   rpc getNodeToLabels (GetNodesToLabelsRequestProto) returns (GetNodesToLabelsResponseProto);
   rpc getClusterNodeLabels (GetClusterNodeLabelsRequestProto) returns (GetClusterNodeLabelsResponseProto);
+  rpc allocate (AllocateRequestProto) returns (AllocateResponseProto);
 }

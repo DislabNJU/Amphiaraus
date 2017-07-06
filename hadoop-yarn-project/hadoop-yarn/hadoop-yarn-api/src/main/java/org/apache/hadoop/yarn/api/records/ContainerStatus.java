@@ -50,6 +50,7 @@ public abstract class ContainerStatus {
     containerStatus.setContainerId(containerId);
     containerStatus.setDiagnostics(diagnostics);
     containerStatus.setExitStatus(exitStatus);
+    containerStatus.setDetails(containerDetails);
     return containerStatus;
   }
 

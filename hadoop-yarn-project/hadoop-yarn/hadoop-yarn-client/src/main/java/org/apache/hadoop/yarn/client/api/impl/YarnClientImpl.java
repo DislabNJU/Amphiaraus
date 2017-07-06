@@ -171,8 +171,10 @@ public class YarnClientImpl extends YarnClient {
   @Override
   protected void serviceStart() throws Exception {
     try {
-      rmClient = ClientRMProxy.createRMProxy(getConfig(),
-          ApplicationClientProtocol.class);
+
+    	rmClient = ClientRMProxy.createRMProxy(getConfig(),
+    			ApplicationClientProtocol.class);
+
       if (historyServiceEnabled) {
         historyClient.start();
       }
@@ -221,6 +223,11 @@ public class YarnClientImpl extends YarnClient {
   public ApplicationId
       submitApplication(ApplicationSubmissionContext appContext)
           throws YarnException, IOException {
+	  //LOG.info("AMcontext: " + appContext.toString());
+	  //LOG.info("queue: " + appContext.getQueue());
+	  //LOG.info("Priority: " + appContext.getPriority().toString());
+	  //LOG.info("Type: " + appContext.getApplicationType());
+	  
     ApplicationId applicationId = appContext.getApplicationId();
     if (applicationId == null) {
       throw new ApplicationIdNotProvidedException(

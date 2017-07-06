@@ -47,6 +47,8 @@ import org.apache.hadoop.security.authorize.PolicyProvider;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.yarn.api.ApplicationClientProtocol;
+import org.apache.hadoop.yarn.api.protocolrecords.AllocateRequest;
+import org.apache.hadoop.yarn.api.protocolrecords.AllocateResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.ApplicationsRequestScope;
 import org.apache.hadoop.yarn.api.protocolrecords.CancelDelegationTokenRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.CancelDelegationTokenResponse;
@@ -1260,4 +1262,12 @@ public class ClientRMService extends AbstractService implements
     }
     return callerUGI.getShortUserName();
   }
+
+@Override
+public AllocateResponse allocate(AllocateRequest request) throws YarnException,
+		IOException {
+	LOG.info("ClientRMService receive AllocateRequest: " + request.toString());
+	return rmContext.getApplicationMasterService().allocate(request);
+}
+
 }

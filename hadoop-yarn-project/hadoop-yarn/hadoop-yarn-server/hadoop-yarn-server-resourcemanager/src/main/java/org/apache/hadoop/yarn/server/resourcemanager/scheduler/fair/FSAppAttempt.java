@@ -307,6 +307,7 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
   synchronized public RMContainer allocate(NodeType type, FSSchedulerNode node,
       Priority priority, ResourceRequest request,
       Container container) {
+	  LOG.info("allocate in FSAppAttempt");
     // Update allowed locality level
     NodeType allowed = allowedLocalityLevel.get(priority);
     if (allowed != null) {
@@ -324,6 +325,7 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
     // Required sanity check - AM can call 'allocate' to update resource 
     // request without locking the scheduler, hence we need to check
     if (getTotalRequiredResources(priority) <= 0) {
+    	LOG.info("getTotalRequiredResources <= 0");
       return null;
     }
     
@@ -488,6 +490,7 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
       FSSchedulerNode node, ResourceRequest request, NodeType type,
       boolean reserved) {
 
+	  LOG.info("assignContainer1");
     // How much does this request need?
     Resource capability = request.getCapability();
 
@@ -538,7 +541,8 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
   }
 
   private Resource assignContainer(FSSchedulerNode node, boolean reserved) {
-    if (LOG.isDebugEnabled()) {
+	  // LOG.info("assignContainer2");
+    if ( LOG.isDebugEnabled()) {
       LOG.debug("Node offered to app: " + getName() + " reserved: " + reserved);
     }
 
@@ -546,11 +550,17 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
         Arrays.asList(node.getReservedContainer().getReservedPriority()) :
         getPriorities();
 
-    // For each priority, see if we can schedule a node local, rack local
+        //if(prioritiesToTry != null && !prioritiesToTry.isEmpty())
+        	//LOG.info("prioritiesToTry: " + prioritiesToTry.toString());
+        
+    // For each priority, see if we can schedule a node local, rack local 
     // or off-switch request. Rack of off-switch requests may be delayed
     // (not scheduled) in order to promote better locality.
     synchronized (this) {
+    	
       for (Priority priority : prioritiesToTry) {
+    	  //LOG.info("priority: " + priority.toString());
+    	  
         if (getTotalRequiredResources(priority) <= 0 ||
             !hasContainerForNode(priority, node)) {
           continue;
@@ -561,6 +571,7 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
         // Check the AM resource usage for the leaf queue
         if (getLiveContainers().size() == 0 && !getUnmanagedAM()) {
           if (!getQueue().canRunAppAM(getAMResource())) {
+        	  LOG.info("return null 1");
             return Resources.none();
           }
         }
@@ -588,6 +599,21 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
               scheduler.getRackLocalityThreshold());
         }
 
+        /*
+        if(rackLocalRequest != null){
+        	LOG.info("rackLocalRequest != null");
+            if( rackLocalRequest.getNumContainers() != 0){
+            	LOG.info("rackLocalRequest.getNumContainers() != 0");
+            }
+        }
+        if(localRequest != null){
+        	LOG.info("localRequest != null");
+            if(localRequest.getNumContainers() != 0){
+            	LOG.info("localRequest.getNumContainers() != 0");
+            }
+        }
+        */
+        
         if (rackLocalRequest != null && rackLocalRequest.getNumContainers() != 0
             && localRequest != null && localRequest.getNumContainers() != 0) {
           return assignContainer(node, localRequest,
@@ -611,6 +637,15 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
           continue;
         }
 
+        /*
+        if(offSwitchRequest != null){
+        	LOG.info("offSwitchRequest != null");
+            if(offSwitchRequest.getNumContainers() != 0){
+            	LOG.info("offSwitchRequest.getNumContainers() != 0");
+            }
+        }
+        */
+        
         if (offSwitchRequest != null && offSwitchRequest.getNumContainers() != 0
             && allowedLocality.equals(NodeType.OFF_SWITCH)) {
           return assignContainer(node, offSwitchRequest,
@@ -618,6 +653,7 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
         }
       }
     }
+    //LOG.info("return null 2");
     return Resources.none();
   }
 
@@ -631,6 +667,7 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
    *     Node that the application has an existing reservation on
    */
   public Resource assignReservedContainer(FSSchedulerNode node) {
+	  LOG.info("assignReservedContainer");
     RMContainer rmContainer = node.getReservedContainer();
     Priority priority = rmContainer.getReservedPriority();
 

@@ -4386,6 +4386,30 @@ public final class YarnServiceProtos {
      */
     org.apache.hadoop.yarn.proto.YarnProtos.ContainerResourceIncreaseRequestProtoOrBuilder getIncreaseRequestOrBuilder(
         int index);
+
+    // optional .hadoop.yarn.ApplicationAttemptIdProto applicationAttemptId = 7;
+    /**
+     * <code>optional .hadoop.yarn.ApplicationAttemptIdProto applicationAttemptId = 7;</code>
+     */
+    boolean hasApplicationAttemptId();
+    /**
+     * <code>optional .hadoop.yarn.ApplicationAttemptIdProto applicationAttemptId = 7;</code>
+     */
+    org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto getApplicationAttemptId();
+    /**
+     * <code>optional .hadoop.yarn.ApplicationAttemptIdProto applicationAttemptId = 7;</code>
+     */
+    org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProtoOrBuilder getApplicationAttemptIdOrBuilder();
+
+    // optional bool isUMS = 8;
+    /**
+     * <code>optional bool isUMS = 8;</code>
+     */
+    boolean hasIsUMS();
+    /**
+     * <code>optional bool isUMS = 8;</code>
+     */
+    boolean getIsUMS();
   }
   /**
    * Protobuf type {@code hadoop.yarn.AllocateRequestProto}
@@ -4483,6 +4507,24 @@ public final class YarnServiceProtos {
                 mutable_bitField0_ |= 0x00000020;
               }
               increaseRequest_.add(input.readMessage(org.apache.hadoop.yarn.proto.YarnProtos.ContainerResourceIncreaseRequestProto.PARSER, extensionRegistry));
+              break;
+            }
+            case 58: {
+              org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto.Builder subBuilder = null;
+              if (((bitField0_ & 0x00000008) == 0x00000008)) {
+                subBuilder = applicationAttemptId_.toBuilder();
+              }
+              applicationAttemptId_ = input.readMessage(org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto.PARSER, extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(applicationAttemptId_);
+                applicationAttemptId_ = subBuilder.buildPartial();
+              }
+              bitField0_ |= 0x00000008;
+              break;
+            }
+            case 64: {
+              bitField0_ |= 0x00000010;
+              isUMS_ = input.readBool();
               break;
             }
           }
@@ -4696,6 +4738,44 @@ public final class YarnServiceProtos {
       return increaseRequest_.get(index);
     }
 
+    // optional .hadoop.yarn.ApplicationAttemptIdProto applicationAttemptId = 7;
+    public static final int APPLICATIONATTEMPTID_FIELD_NUMBER = 7;
+    private org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto applicationAttemptId_;
+    /**
+     * <code>optional .hadoop.yarn.ApplicationAttemptIdProto applicationAttemptId = 7;</code>
+     */
+    public boolean hasApplicationAttemptId() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional .hadoop.yarn.ApplicationAttemptIdProto applicationAttemptId = 7;</code>
+     */
+    public org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto getApplicationAttemptId() {
+      return applicationAttemptId_;
+    }
+    /**
+     * <code>optional .hadoop.yarn.ApplicationAttemptIdProto applicationAttemptId = 7;</code>
+     */
+    public org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProtoOrBuilder getApplicationAttemptIdOrBuilder() {
+      return applicationAttemptId_;
+    }
+
+    // optional bool isUMS = 8;
+    public static final int ISUMS_FIELD_NUMBER = 8;
+    private boolean isUMS_;
+    /**
+     * <code>optional bool isUMS = 8;</code>
+     */
+    public boolean hasIsUMS() {
+      return ((bitField0_ & 0x00000010) == 0x00000010);
+    }
+    /**
+     * <code>optional bool isUMS = 8;</code>
+     */
+    public boolean getIsUMS() {
+      return isUMS_;
+    }
+
     private void initFields() {
       ask_ = java.util.Collections.emptyList();
       release_ = java.util.Collections.emptyList();
@@ -4703,6 +4783,8 @@ public final class YarnServiceProtos {
       responseId_ = 0;
       progress_ = 0F;
       increaseRequest_ = java.util.Collections.emptyList();
+      applicationAttemptId_ = org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto.getDefaultInstance();
+      isUMS_ = false;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -4733,6 +4815,12 @@ public final class YarnServiceProtos {
       }
       for (int i = 0; i < increaseRequest_.size(); i++) {
         output.writeMessage(6, increaseRequest_.get(i));
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeMessage(7, applicationAttemptId_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        output.writeBool(8, isUMS_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -4766,6 +4854,14 @@ public final class YarnServiceProtos {
       for (int i = 0; i < increaseRequest_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(6, increaseRequest_.get(i));
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(7, applicationAttemptId_);
+      }
+      if (((bitField0_ & 0x00000010) == 0x00000010)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(8, isUMS_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -4810,6 +4906,16 @@ public final class YarnServiceProtos {
       }
       result = result && getIncreaseRequestList()
           .equals(other.getIncreaseRequestList());
+      result = result && (hasApplicationAttemptId() == other.hasApplicationAttemptId());
+      if (hasApplicationAttemptId()) {
+        result = result && getApplicationAttemptId()
+            .equals(other.getApplicationAttemptId());
+      }
+      result = result && (hasIsUMS() == other.hasIsUMS());
+      if (hasIsUMS()) {
+        result = result && (getIsUMS()
+            == other.getIsUMS());
+      }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
       return result;
@@ -4847,6 +4953,14 @@ public final class YarnServiceProtos {
       if (getIncreaseRequestCount() > 0) {
         hash = (37 * hash) + INCREASE_REQUEST_FIELD_NUMBER;
         hash = (53 * hash) + getIncreaseRequestList().hashCode();
+      }
+      if (hasApplicationAttemptId()) {
+        hash = (37 * hash) + APPLICATIONATTEMPTID_FIELD_NUMBER;
+        hash = (53 * hash) + getApplicationAttemptId().hashCode();
+      }
+      if (hasIsUMS()) {
+        hash = (37 * hash) + ISUMS_FIELD_NUMBER;
+        hash = (53 * hash) + hashBoolean(getIsUMS());
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -4953,6 +5067,7 @@ public final class YarnServiceProtos {
           getReleaseFieldBuilder();
           getBlacklistRequestFieldBuilder();
           getIncreaseRequestFieldBuilder();
+          getApplicationAttemptIdFieldBuilder();
         }
       }
       private static Builder create() {
@@ -4989,6 +5104,14 @@ public final class YarnServiceProtos {
         } else {
           increaseRequestBuilder_.clear();
         }
+        if (applicationAttemptIdBuilder_ == null) {
+          applicationAttemptId_ = org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto.getDefaultInstance();
+        } else {
+          applicationAttemptIdBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000040);
+        isUMS_ = false;
+        bitField0_ = (bitField0_ & ~0x00000080);
         return this;
       }
 
@@ -5060,6 +5183,18 @@ public final class YarnServiceProtos {
         } else {
           result.increaseRequest_ = increaseRequestBuilder_.build();
         }
+        if (((from_bitField0_ & 0x00000040) == 0x00000040)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        if (applicationAttemptIdBuilder_ == null) {
+          result.applicationAttemptId_ = applicationAttemptId_;
+        } else {
+          result.applicationAttemptId_ = applicationAttemptIdBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+          to_bitField0_ |= 0x00000010;
+        }
+        result.isUMS_ = isUMS_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -5162,6 +5297,12 @@ public final class YarnServiceProtos {
               increaseRequestBuilder_.addAllMessages(other.increaseRequest_);
             }
           }
+        }
+        if (other.hasApplicationAttemptId()) {
+          mergeApplicationAttemptId(other.getApplicationAttemptId());
+        }
+        if (other.hasIsUMS()) {
+          setIsUMS(other.getIsUMS());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -6091,6 +6232,156 @@ public final class YarnServiceProtos {
           increaseRequest_ = null;
         }
         return increaseRequestBuilder_;
+      }
+
+      // optional .hadoop.yarn.ApplicationAttemptIdProto applicationAttemptId = 7;
+      private org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto applicationAttemptId_ = org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto, org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto.Builder, org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProtoOrBuilder> applicationAttemptIdBuilder_;
+      /**
+       * <code>optional .hadoop.yarn.ApplicationAttemptIdProto applicationAttemptId = 7;</code>
+       */
+      public boolean hasApplicationAttemptId() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      /**
+       * <code>optional .hadoop.yarn.ApplicationAttemptIdProto applicationAttemptId = 7;</code>
+       */
+      public org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto getApplicationAttemptId() {
+        if (applicationAttemptIdBuilder_ == null) {
+          return applicationAttemptId_;
+        } else {
+          return applicationAttemptIdBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .hadoop.yarn.ApplicationAttemptIdProto applicationAttemptId = 7;</code>
+       */
+      public Builder setApplicationAttemptId(org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto value) {
+        if (applicationAttemptIdBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          applicationAttemptId_ = value;
+          onChanged();
+        } else {
+          applicationAttemptIdBuilder_.setMessage(value);
+        }
+        bitField0_ |= 0x00000040;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.yarn.ApplicationAttemptIdProto applicationAttemptId = 7;</code>
+       */
+      public Builder setApplicationAttemptId(
+          org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto.Builder builderForValue) {
+        if (applicationAttemptIdBuilder_ == null) {
+          applicationAttemptId_ = builderForValue.build();
+          onChanged();
+        } else {
+          applicationAttemptIdBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000040;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.yarn.ApplicationAttemptIdProto applicationAttemptId = 7;</code>
+       */
+      public Builder mergeApplicationAttemptId(org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto value) {
+        if (applicationAttemptIdBuilder_ == null) {
+          if (((bitField0_ & 0x00000040) == 0x00000040) &&
+              applicationAttemptId_ != org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto.getDefaultInstance()) {
+            applicationAttemptId_ =
+              org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto.newBuilder(applicationAttemptId_).mergeFrom(value).buildPartial();
+          } else {
+            applicationAttemptId_ = value;
+          }
+          onChanged();
+        } else {
+          applicationAttemptIdBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000040;
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.yarn.ApplicationAttemptIdProto applicationAttemptId = 7;</code>
+       */
+      public Builder clearApplicationAttemptId() {
+        if (applicationAttemptIdBuilder_ == null) {
+          applicationAttemptId_ = org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto.getDefaultInstance();
+          onChanged();
+        } else {
+          applicationAttemptIdBuilder_.clear();
+        }
+        bitField0_ = (bitField0_ & ~0x00000040);
+        return this;
+      }
+      /**
+       * <code>optional .hadoop.yarn.ApplicationAttemptIdProto applicationAttemptId = 7;</code>
+       */
+      public org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto.Builder getApplicationAttemptIdBuilder() {
+        bitField0_ |= 0x00000040;
+        onChanged();
+        return getApplicationAttemptIdFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .hadoop.yarn.ApplicationAttemptIdProto applicationAttemptId = 7;</code>
+       */
+      public org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProtoOrBuilder getApplicationAttemptIdOrBuilder() {
+        if (applicationAttemptIdBuilder_ != null) {
+          return applicationAttemptIdBuilder_.getMessageOrBuilder();
+        } else {
+          return applicationAttemptId_;
+        }
+      }
+      /**
+       * <code>optional .hadoop.yarn.ApplicationAttemptIdProto applicationAttemptId = 7;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilder<
+          org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto, org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto.Builder, org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProtoOrBuilder> 
+          getApplicationAttemptIdFieldBuilder() {
+        if (applicationAttemptIdBuilder_ == null) {
+          applicationAttemptIdBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto, org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProto.Builder, org.apache.hadoop.yarn.proto.YarnProtos.ApplicationAttemptIdProtoOrBuilder>(
+                  applicationAttemptId_,
+                  getParentForChildren(),
+                  isClean());
+          applicationAttemptId_ = null;
+        }
+        return applicationAttemptIdBuilder_;
+      }
+
+      // optional bool isUMS = 8;
+      private boolean isUMS_ ;
+      /**
+       * <code>optional bool isUMS = 8;</code>
+       */
+      public boolean hasIsUMS() {
+        return ((bitField0_ & 0x00000080) == 0x00000080);
+      }
+      /**
+       * <code>optional bool isUMS = 8;</code>
+       */
+      public boolean getIsUMS() {
+        return isUMS_;
+      }
+      /**
+       * <code>optional bool isUMS = 8;</code>
+       */
+      public Builder setIsUMS(boolean value) {
+        bitField0_ |= 0x00000080;
+        isUMS_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool isUMS = 8;</code>
+       */
+      public Builder clearIsUMS() {
+        bitField0_ = (bitField0_ & ~0x00000080);
+        isUMS_ = false;
+        onChanged();
+        return this;
       }
 
       // @@protoc_insertion_point(builder_scope:hadoop.yarn.AllocateRequestProto)
@@ -42588,7 +42879,7 @@ public final class YarnServiceProtos {
       "\022J\n\030final_application_status\030\003 \001(\0162(.had" +
       "oop.yarn.FinalApplicationStatusProto\"E\n$" +
       "FinishApplicationMasterResponseProto\022\035\n\016",
-      "isUnregistered\030\001 \001(\010:\005false\"\262\002\n\024Allocate" +
+      "isUnregistered\030\001 \001(\010:\005false\"\207\003\n\024Allocate" +
       "RequestProto\022.\n\003ask\030\001 \003(\0132!.hadoop.yarn." +
       "ResourceRequestProto\022.\n\007release\030\002 \003(\0132\035." +
       "hadoop.yarn.ContainerIdProto\022E\n\021blacklis" +
@@ -42596,154 +42887,156 @@ public final class YarnServiceProtos {
       "acklistRequestProto\022\023\n\013response_id\030\004 \001(\005" +
       "\022\020\n\010progress\030\005 \001(\002\022L\n\020increase_request\030\006" +
       " \003(\01322.hadoop.yarn.ContainerResourceIncr" +
-      "easeRequestProto\"b\n\014NMTokenProto\022(\n\006node" +
-      "Id\030\001 \001(\0132\030.hadoop.yarn.NodeIdProto\022(\n\005to",
-      "ken\030\002 \001(\0132\031.hadoop.common.TokenProto\"\207\005\n" +
-      "\025AllocateResponseProto\0220\n\013a_m_command\030\001 " +
-      "\001(\0162\033.hadoop.yarn.AMCommandProto\022\023\n\013resp" +
-      "onse_id\030\002 \001(\005\0229\n\024allocated_containers\030\003 " +
-      "\003(\0132\033.hadoop.yarn.ContainerProto\022G\n\034comp" +
-      "leted_container_statuses\030\004 \003(\0132!.hadoop." +
-      "yarn.ContainerStatusProto\022)\n\005limit\030\005 \001(\013" +
-      "2\032.hadoop.yarn.ResourceProto\0223\n\rupdated_" +
-      "nodes\030\006 \003(\0132\034.hadoop.yarn.NodeReportProt" +
-      "o\022\031\n\021num_cluster_nodes\030\007 \001(\005\0224\n\007preempt\030",
-      "\010 \001(\0132#.hadoop.yarn.PreemptionMessagePro" +
-      "to\022,\n\tnm_tokens\030\t \003(\0132\031.hadoop.yarn.NMTo" +
-      "kenProto\022I\n\024increased_containers\030\n \003(\0132+" +
-      ".hadoop.yarn.ContainerResourceIncreasePr" +
-      "oto\022I\n\024decreased_containers\030\013 \003(\0132+.hado" +
-      "op.yarn.ContainerResourceDecreaseProto\022." +
-      "\n\013am_rm_token\030\014 \001(\0132\031.hadoop.common.Toke" +
-      "nProto\"\037\n\035GetNewApplicationRequestProto\"" +
-      "\220\001\n\036GetNewApplicationResponseProto\0227\n\016ap" +
-      "plication_id\030\001 \001(\0132\037.hadoop.yarn.Applica",
-      "tionIdProto\0225\n\021maximumCapability\030\002 \001(\0132\032" +
-      ".hadoop.yarn.ResourceProto\"[\n GetApplica" +
-      "tionReportRequestProto\0227\n\016application_id" +
-      "\030\001 \001(\0132\037.hadoop.yarn.ApplicationIdProto\"" +
-      "d\n!GetApplicationReportResponseProto\022?\n\022" +
-      "application_report\030\001 \001(\0132#.hadoop.yarn.A" +
-      "pplicationReportProto\"w\n\035SubmitApplicati" +
-      "onRequestProto\022V\n\036application_submission" +
-      "_context\030\001 \001(\0132..hadoop.yarn.Application" +
-      "SubmissionContextProto\" \n\036SubmitApplicat",
-      "ionResponseProto\"V\n\033KillApplicationReque" +
-      "stProto\0227\n\016application_id\030\001 \001(\0132\037.hadoop" +
-      ".yarn.ApplicationIdProto\"@\n\034KillApplicat" +
-      "ionResponseProto\022 \n\021is_kill_completed\030\001 " +
-      "\001(\010:\005false\"\037\n\035GetClusterMetricsRequestPr" +
-      "oto\"_\n\036GetClusterMetricsResponseProto\022=\n" +
-      "\017cluster_metrics\030\001 \001(\0132$.hadoop.yarn.Yar" +
-      "nClusterMetricsProto\"x\n\'MoveApplicationA" +
-      "crossQueuesRequestProto\0227\n\016application_i" +
-      "d\030\001 \002(\0132\037.hadoop.yarn.ApplicationIdProto",
-      "\022\024\n\014target_queue\030\002 \002(\t\"*\n(MoveApplicatio" +
-      "nAcrossQueuesResponseProto\"\325\002\n\033GetApplic" +
-      "ationsRequestProto\022\031\n\021application_types\030" +
-      "\001 \003(\t\022B\n\022application_states\030\002 \003(\0162&.hado" +
-      "op.yarn.YarnApplicationStateProto\022\r\n\005use" +
-      "rs\030\003 \003(\t\022\016\n\006queues\030\004 \003(\t\022\r\n\005limit\030\005 \001(\003\022" +
-      "\023\n\013start_begin\030\006 \001(\003\022\021\n\tstart_end\030\007 \001(\003\022" +
-      "\024\n\014finish_begin\030\010 \001(\003\022\022\n\nfinish_end\030\t \001(" +
-      "\003\022\027\n\017applicationTags\030\n \003(\t\022>\n\005scope\030\013 \001(" +
-      "\0162*.hadoop.yarn.ApplicationsRequestScope",
-      "Proto:\003ALL\"Y\n\034GetApplicationsResponsePro" +
-      "to\0229\n\014applications\030\001 \003(\0132#.hadoop.yarn.A" +
-      "pplicationReportProto\"N\n\033GetClusterNodes" +
-      "RequestProto\022/\n\nnodeStates\030\001 \003(\0162\033.hadoo" +
-      "p.yarn.NodeStateProto\"Q\n\034GetClusterNodes" +
-      "ResponseProto\0221\n\013nodeReports\030\001 \003(\0132\034.had" +
-      "oop.yarn.NodeReportProto\"y\n\030GetQueueInfo" +
-      "RequestProto\022\021\n\tqueueName\030\001 \001(\t\022\033\n\023inclu" +
-      "deApplications\030\002 \001(\010\022\032\n\022includeChildQueu" +
-      "es\030\003 \001(\010\022\021\n\trecursive\030\004 \001(\010\"K\n\031GetQueueI",
-      "nfoResponseProto\022.\n\tqueueInfo\030\001 \001(\0132\033.ha" +
-      "doop.yarn.QueueInfoProto\"\"\n GetQueueUser" +
-      "AclsInfoRequestProto\"^\n!GetQueueUserAcls" +
-      "InfoResponseProto\0229\n\rqueueUserAcls\030\001 \003(\013" +
-      "2\".hadoop.yarn.QueueUserACLInfoProto\"\036\n\034" +
-      "GetNodesToLabelsRequestProto\"W\n\035GetNodes" +
-      "ToLabelsResponseProto\0226\n\014nodeToLabels\030\001 " +
-      "\003(\0132 .hadoop.yarn.NodeIdToLabelsProto\"\"\n" +
-      " GetClusterNodeLabelsRequestProto\"7\n!Get" +
-      "ClusterNodeLabelsResponseProto\022\022\n\nnodeLa",
-      "bels\030\001 \003(\t\"\234\001\n\032StartContainerRequestProt" +
-      "o\022J\n\030container_launch_context\030\001 \001(\0132(.ha" +
-      "doop.yarn.ContainerLaunchContextProto\0222\n" +
-      "\017container_token\030\002 \001(\0132\031.hadoop.common.T" +
-      "okenProto\"[\n\033StartContainerResponseProto" +
-      "\022<\n\022services_meta_data\030\001 \003(\0132 .hadoop.ya" +
-      "rn.StringBytesMapProto\"P\n\031StopContainerR" +
-      "equestProto\0223\n\014container_id\030\001 \001(\0132\035.hado" +
-      "op.yarn.ContainerIdProto\"\034\n\032StopContaine" +
-      "rResponseProto\"U\n\036GetContainerStatusRequ",
-      "estProto\0223\n\014container_id\030\001 \001(\0132\035.hadoop." +
-      "yarn.ContainerIdProto\"T\n\037GetContainerSta" +
-      "tusResponseProto\0221\n\006status\030\001 \001(\0132!.hadoo" +
-      "p.yarn.ContainerStatusProto\"g\n\033StartCont" +
-      "ainersRequestProto\022H\n\027start_container_re" +
-      "quest\030\001 \003(\0132\'.hadoop.yarn.StartContainer" +
-      "RequestProto\"\213\001\n\032ContainerExceptionMapPr" +
-      "oto\0223\n\014container_id\030\001 \001(\0132\035.hadoop.yarn." +
-      "ContainerIdProto\0228\n\texception\030\002 \001(\0132%.ha" +
-      "doop.yarn.SerializedExceptionProto\"\331\001\n\034S",
-      "tartContainersResponseProto\022<\n\022services_" +
-      "meta_data\030\001 \003(\0132 .hadoop.yarn.StringByte" +
-      "sMapProto\0229\n\022succeeded_requests\030\002 \003(\0132\035." +
-      "hadoop.yarn.ContainerIdProto\022@\n\017failed_r" +
-      "equests\030\003 \003(\0132\'.hadoop.yarn.ContainerExc" +
-      "eptionMapProto\"Q\n\032StopContainersRequestP" +
-      "roto\0223\n\014container_id\030\001 \003(\0132\035.hadoop.yarn" +
-      ".ContainerIdProto\"\232\001\n\033StopContainersResp" +
-      "onseProto\0229\n\022succeeded_requests\030\001 \003(\0132\035." +
-      "hadoop.yarn.ContainerIdProto\022@\n\017failed_r",
-      "equests\030\002 \003(\0132\'.hadoop.yarn.ContainerExc" +
-      "eptionMapProto\"W\n GetContainerStatusesRe" +
-      "questProto\0223\n\014container_id\030\001 \003(\0132\035.hadoo" +
-      "p.yarn.ContainerIdProto\"\230\001\n!GetContainer" +
-      "StatusesResponseProto\0221\n\006status\030\001 \003(\0132!." +
-      "hadoop.yarn.ContainerStatusProto\022@\n\017fail" +
-      "ed_requests\030\002 \003(\0132\'.hadoop.yarn.Containe" +
-      "rExceptionMapProto\"q\n\'GetApplicationAtte" +
-      "mptReportRequestProto\022F\n\026application_att" +
-      "empt_id\030\001 \001(\0132&.hadoop.yarn.ApplicationA",
-      "ttemptIdProto\"z\n(GetApplicationAttemptRe" +
-      "portResponseProto\022N\n\032application_attempt" +
-      "_report\030\001 \001(\0132*.hadoop.yarn.ApplicationA" +
-      "ttemptReportProto\"]\n\"GetApplicationAttem" +
-      "ptsRequestProto\0227\n\016application_id\030\001 \001(\0132" +
-      "\037.hadoop.yarn.ApplicationIdProto\"o\n#GetA" +
-      "pplicationAttemptsResponseProto\022H\n\024appli" +
-      "cation_attempts\030\001 \003(\0132*.hadoop.yarn.Appl" +
-      "icationAttemptReportProto\"U\n\036GetContaine" +
-      "rReportRequestProto\0223\n\014container_id\030\001 \001(",
-      "\0132\035.hadoop.yarn.ContainerIdProto\"^\n\037GetC" +
-      "ontainerReportResponseProto\022;\n\020container" +
-      "_report\030\001 \001(\0132!.hadoop.yarn.ContainerRep" +
-      "ortProto\"c\n\031GetContainersRequestProto\022F\n" +
-      "\026application_attempt_id\030\001 \001(\0132&.hadoop.y" +
-      "arn.ApplicationAttemptIdProto\"S\n\032GetCont" +
-      "ainersResponseProto\0225\n\ncontainers\030\001 \003(\0132" +
-      "!.hadoop.yarn.ContainerReportProto\"{\n!Re" +
-      "servationSubmissionRequestProto\022\r\n\005queue" +
-      "\030\001 \001(\t\022G\n\026reservation_definition\030\002 \001(\0132\'",
-      ".hadoop.yarn.ReservationDefinitionProto\"" +
-      "]\n\"ReservationSubmissionResponseProto\0227\n" +
-      "\016reservation_id\030\001 \001(\0132\037.hadoop.yarn.Rese" +
-      "rvationIdProto\"\241\001\n\035ReservationUpdateRequ" +
-      "estProto\022G\n\026reservation_definition\030\001 \001(\013" +
-      "2\'.hadoop.yarn.ReservationDefinitionProt" +
-      "o\0227\n\016reservation_id\030\002 \001(\0132\037.hadoop.yarn." +
-      "ReservationIdProto\" \n\036ReservationUpdateR" +
-      "esponseProto\"X\n\035ReservationDeleteRequest" +
-      "Proto\0227\n\016reservation_id\030\001 \001(\0132\037.hadoop.y",
-      "arn.ReservationIdProto\" \n\036ReservationDel" +
-      "eteResponseProto*-\n\026SchedulerResourceTyp" +
-      "es\022\n\n\006MEMORY\020\000\022\007\n\003CPU\020\001*?\n\035ApplicationsR" +
-      "equestScopeProto\022\007\n\003ALL\020\000\022\014\n\010VIEWABLE\020\001\022" +
-      "\007\n\003OWN\020\002B7\n\034org.apache.hadoop.yarn.proto" +
-      "B\021YarnServiceProtos\210\001\001\240\001\001"
+      "easeRequestProto\022D\n\024applicationAttemptId" +
+      "\030\007 \001(\0132&.hadoop.yarn.ApplicationAttemptI",
+      "dProto\022\r\n\005isUMS\030\010 \001(\010\"b\n\014NMTokenProto\022(\n" +
+      "\006nodeId\030\001 \001(\0132\030.hadoop.yarn.NodeIdProto\022" +
+      "(\n\005token\030\002 \001(\0132\031.hadoop.common.TokenProt" +
+      "o\"\207\005\n\025AllocateResponseProto\0220\n\013a_m_comma" +
+      "nd\030\001 \001(\0162\033.hadoop.yarn.AMCommandProto\022\023\n" +
+      "\013response_id\030\002 \001(\005\0229\n\024allocated_containe" +
+      "rs\030\003 \003(\0132\033.hadoop.yarn.ContainerProto\022G\n" +
+      "\034completed_container_statuses\030\004 \003(\0132!.ha" +
+      "doop.yarn.ContainerStatusProto\022)\n\005limit\030" +
+      "\005 \001(\0132\032.hadoop.yarn.ResourceProto\0223\n\rupd",
+      "ated_nodes\030\006 \003(\0132\034.hadoop.yarn.NodeRepor" +
+      "tProto\022\031\n\021num_cluster_nodes\030\007 \001(\005\0224\n\007pre" +
+      "empt\030\010 \001(\0132#.hadoop.yarn.PreemptionMessa" +
+      "geProto\022,\n\tnm_tokens\030\t \003(\0132\031.hadoop.yarn" +
+      ".NMTokenProto\022I\n\024increased_containers\030\n " +
+      "\003(\0132+.hadoop.yarn.ContainerResourceIncre" +
+      "aseProto\022I\n\024decreased_containers\030\013 \003(\0132+" +
+      ".hadoop.yarn.ContainerResourceDecreasePr" +
+      "oto\022.\n\013am_rm_token\030\014 \001(\0132\031.hadoop.common" +
+      ".TokenProto\"\037\n\035GetNewApplicationRequestP",
+      "roto\"\220\001\n\036GetNewApplicationResponseProto\022" +
+      "7\n\016application_id\030\001 \001(\0132\037.hadoop.yarn.Ap" +
+      "plicationIdProto\0225\n\021maximumCapability\030\002 " +
+      "\001(\0132\032.hadoop.yarn.ResourceProto\"[\n GetAp" +
+      "plicationReportRequestProto\0227\n\016applicati" +
+      "on_id\030\001 \001(\0132\037.hadoop.yarn.ApplicationIdP" +
+      "roto\"d\n!GetApplicationReportResponseProt" +
+      "o\022?\n\022application_report\030\001 \001(\0132#.hadoop.y" +
+      "arn.ApplicationReportProto\"w\n\035SubmitAppl" +
+      "icationRequestProto\022V\n\036application_submi",
+      "ssion_context\030\001 \001(\0132..hadoop.yarn.Applic" +
+      "ationSubmissionContextProto\" \n\036SubmitApp" +
+      "licationResponseProto\"V\n\033KillApplication" +
+      "RequestProto\0227\n\016application_id\030\001 \001(\0132\037.h" +
+      "adoop.yarn.ApplicationIdProto\"@\n\034KillApp" +
+      "licationResponseProto\022 \n\021is_kill_complet" +
+      "ed\030\001 \001(\010:\005false\"\037\n\035GetClusterMetricsRequ" +
+      "estProto\"_\n\036GetClusterMetricsResponsePro" +
+      "to\022=\n\017cluster_metrics\030\001 \001(\0132$.hadoop.yar" +
+      "n.YarnClusterMetricsProto\"x\n\'MoveApplica",
+      "tionAcrossQueuesRequestProto\0227\n\016applicat" +
+      "ion_id\030\001 \002(\0132\037.hadoop.yarn.ApplicationId" +
+      "Proto\022\024\n\014target_queue\030\002 \002(\t\"*\n(MoveAppli" +
+      "cationAcrossQueuesResponseProto\"\325\002\n\033GetA" +
+      "pplicationsRequestProto\022\031\n\021application_t" +
+      "ypes\030\001 \003(\t\022B\n\022application_states\030\002 \003(\0162&" +
+      ".hadoop.yarn.YarnApplicationStateProto\022\r" +
+      "\n\005users\030\003 \003(\t\022\016\n\006queues\030\004 \003(\t\022\r\n\005limit\030\005" +
+      " \001(\003\022\023\n\013start_begin\030\006 \001(\003\022\021\n\tstart_end\030\007" +
+      " \001(\003\022\024\n\014finish_begin\030\010 \001(\003\022\022\n\nfinish_end",
+      "\030\t \001(\003\022\027\n\017applicationTags\030\n \003(\t\022>\n\005scope" +
+      "\030\013 \001(\0162*.hadoop.yarn.ApplicationsRequest" +
+      "ScopeProto:\003ALL\"Y\n\034GetApplicationsRespon" +
+      "seProto\0229\n\014applications\030\001 \003(\0132#.hadoop.y" +
+      "arn.ApplicationReportProto\"N\n\033GetCluster" +
+      "NodesRequestProto\022/\n\nnodeStates\030\001 \003(\0162\033." +
+      "hadoop.yarn.NodeStateProto\"Q\n\034GetCluster" +
+      "NodesResponseProto\0221\n\013nodeReports\030\001 \003(\0132" +
+      "\034.hadoop.yarn.NodeReportProto\"y\n\030GetQueu" +
+      "eInfoRequestProto\022\021\n\tqueueName\030\001 \001(\t\022\033\n\023",
+      "includeApplications\030\002 \001(\010\022\032\n\022includeChil" +
+      "dQueues\030\003 \001(\010\022\021\n\trecursive\030\004 \001(\010\"K\n\031GetQ" +
+      "ueueInfoResponseProto\022.\n\tqueueInfo\030\001 \001(\013" +
+      "2\033.hadoop.yarn.QueueInfoProto\"\"\n GetQueu" +
+      "eUserAclsInfoRequestProto\"^\n!GetQueueUse" +
+      "rAclsInfoResponseProto\0229\n\rqueueUserAcls\030" +
+      "\001 \003(\0132\".hadoop.yarn.QueueUserACLInfoProt" +
+      "o\"\036\n\034GetNodesToLabelsRequestProto\"W\n\035Get" +
+      "NodesToLabelsResponseProto\0226\n\014nodeToLabe" +
+      "ls\030\001 \003(\0132 .hadoop.yarn.NodeIdToLabelsPro",
+      "to\"\"\n GetClusterNodeLabelsRequestProto\"7" +
+      "\n!GetClusterNodeLabelsResponseProto\022\022\n\nn" +
+      "odeLabels\030\001 \003(\t\"\234\001\n\032StartContainerReques" +
+      "tProto\022J\n\030container_launch_context\030\001 \001(\013" +
+      "2(.hadoop.yarn.ContainerLaunchContextPro" +
+      "to\0222\n\017container_token\030\002 \001(\0132\031.hadoop.com" +
+      "mon.TokenProto\"[\n\033StartContainerResponse" +
+      "Proto\022<\n\022services_meta_data\030\001 \003(\0132 .hado" +
+      "op.yarn.StringBytesMapProto\"P\n\031StopConta" +
+      "inerRequestProto\0223\n\014container_id\030\001 \001(\0132\035",
+      ".hadoop.yarn.ContainerIdProto\"\034\n\032StopCon" +
+      "tainerResponseProto\"U\n\036GetContainerStatu" +
+      "sRequestProto\0223\n\014container_id\030\001 \001(\0132\035.ha" +
+      "doop.yarn.ContainerIdProto\"T\n\037GetContain" +
+      "erStatusResponseProto\0221\n\006status\030\001 \001(\0132!." +
+      "hadoop.yarn.ContainerStatusProto\"g\n\033Star" +
+      "tContainersRequestProto\022H\n\027start_contain" +
+      "er_request\030\001 \003(\0132\'.hadoop.yarn.StartCont" +
+      "ainerRequestProto\"\213\001\n\032ContainerException" +
+      "MapProto\0223\n\014container_id\030\001 \001(\0132\035.hadoop.",
+      "yarn.ContainerIdProto\0228\n\texception\030\002 \001(\013" +
+      "2%.hadoop.yarn.SerializedExceptionProto\"" +
+      "\331\001\n\034StartContainersResponseProto\022<\n\022serv" +
+      "ices_meta_data\030\001 \003(\0132 .hadoop.yarn.Strin" +
+      "gBytesMapProto\0229\n\022succeeded_requests\030\002 \003" +
+      "(\0132\035.hadoop.yarn.ContainerIdProto\022@\n\017fai" +
+      "led_requests\030\003 \003(\0132\'.hadoop.yarn.Contain" +
+      "erExceptionMapProto\"Q\n\032StopContainersReq" +
+      "uestProto\0223\n\014container_id\030\001 \003(\0132\035.hadoop" +
+      ".yarn.ContainerIdProto\"\232\001\n\033StopContainer",
+      "sResponseProto\0229\n\022succeeded_requests\030\001 \003" +
+      "(\0132\035.hadoop.yarn.ContainerIdProto\022@\n\017fai" +
+      "led_requests\030\002 \003(\0132\'.hadoop.yarn.Contain" +
+      "erExceptionMapProto\"W\n GetContainerStatu" +
+      "sesRequestProto\0223\n\014container_id\030\001 \003(\0132\035." +
+      "hadoop.yarn.ContainerIdProto\"\230\001\n!GetCont" +
+      "ainerStatusesResponseProto\0221\n\006status\030\001 \003" +
+      "(\0132!.hadoop.yarn.ContainerStatusProto\022@\n" +
+      "\017failed_requests\030\002 \003(\0132\'.hadoop.yarn.Con" +
+      "tainerExceptionMapProto\"q\n\'GetApplicatio",
+      "nAttemptReportRequestProto\022F\n\026applicatio" +
+      "n_attempt_id\030\001 \001(\0132&.hadoop.yarn.Applica" +
+      "tionAttemptIdProto\"z\n(GetApplicationAtte" +
+      "mptReportResponseProto\022N\n\032application_at" +
+      "tempt_report\030\001 \001(\0132*.hadoop.yarn.Applica" +
+      "tionAttemptReportProto\"]\n\"GetApplication" +
+      "AttemptsRequestProto\0227\n\016application_id\030\001" +
+      " \001(\0132\037.hadoop.yarn.ApplicationIdProto\"o\n" +
+      "#GetApplicationAttemptsResponseProto\022H\n\024" +
+      "application_attempts\030\001 \003(\0132*.hadoop.yarn",
+      ".ApplicationAttemptReportProto\"U\n\036GetCon" +
+      "tainerReportRequestProto\0223\n\014container_id" +
+      "\030\001 \001(\0132\035.hadoop.yarn.ContainerIdProto\"^\n" +
+      "\037GetContainerReportResponseProto\022;\n\020cont" +
+      "ainer_report\030\001 \001(\0132!.hadoop.yarn.Contain" +
+      "erReportProto\"c\n\031GetContainersRequestPro" +
+      "to\022F\n\026application_attempt_id\030\001 \001(\0132&.had" +
+      "oop.yarn.ApplicationAttemptIdProto\"S\n\032Ge" +
+      "tContainersResponseProto\0225\n\ncontainers\030\001" +
+      " \003(\0132!.hadoop.yarn.ContainerReportProto\"",
+      "{\n!ReservationSubmissionRequestProto\022\r\n\005" +
+      "queue\030\001 \001(\t\022G\n\026reservation_definition\030\002 " +
+      "\001(\0132\'.hadoop.yarn.ReservationDefinitionP" +
+      "roto\"]\n\"ReservationSubmissionResponsePro" +
+      "to\0227\n\016reservation_id\030\001 \001(\0132\037.hadoop.yarn" +
+      ".ReservationIdProto\"\241\001\n\035ReservationUpdat" +
+      "eRequestProto\022G\n\026reservation_definition\030" +
+      "\001 \001(\0132\'.hadoop.yarn.ReservationDefinitio" +
+      "nProto\0227\n\016reservation_id\030\002 \001(\0132\037.hadoop." +
+      "yarn.ReservationIdProto\" \n\036ReservationUp",
+      "dateResponseProto\"X\n\035ReservationDeleteRe" +
+      "questProto\0227\n\016reservation_id\030\001 \001(\0132\037.had" +
+      "oop.yarn.ReservationIdProto\" \n\036Reservati" +
+      "onDeleteResponseProto*-\n\026SchedulerResour" +
+      "ceTypes\022\n\n\006MEMORY\020\000\022\007\n\003CPU\020\001*?\n\035Applicat" +
+      "ionsRequestScopeProto\022\007\n\003ALL\020\000\022\014\n\010VIEWAB" +
+      "LE\020\001\022\007\n\003OWN\020\002B7\n\034org.apache.hadoop.yarn." +
+      "protoB\021YarnServiceProtos\210\001\001\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -42779,7 +43072,7 @@ public final class YarnServiceProtos {
           internal_static_hadoop_yarn_AllocateRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_hadoop_yarn_AllocateRequestProto_descriptor,
-              new java.lang.String[] { "Ask", "Release", "BlacklistRequest", "ResponseId", "Progress", "IncreaseRequest", });
+              new java.lang.String[] { "Ask", "Release", "BlacklistRequest", "ResponseId", "Progress", "IncreaseRequest", "ApplicationAttemptId", "IsUMS", });
           internal_static_hadoop_yarn_NMTokenProto_descriptor =
             getDescriptor().getMessageTypes().get(5);
           internal_static_hadoop_yarn_NMTokenProto_fieldAccessorTable = new

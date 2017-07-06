@@ -69,6 +69,7 @@ import org.apache.hadoop.yarn.api.records.StrictPreemptionContract;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.ApplicationAttemptNotFoundException;
 import org.apache.hadoop.yarn.exceptions.ApplicationMasterNotRegisteredException;
+import org.apache.hadoop.yarn.exceptions.ApplicationNotFoundException;
 import org.apache.hadoop.yarn.exceptions.InvalidApplicationMasterRequestException;
 import org.apache.hadoop.yarn.exceptions.InvalidContainerReleaseException;
 import org.apache.hadoop.yarn.exceptions.InvalidResourceBlacklistRequestException;
@@ -84,6 +85,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMApp;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.AMLivelinessMonitor;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttempt;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptImpl;
+import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptState;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptRegistrationEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptStatusupdateEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.event.RMAppAttemptUnregistrationEvent;
@@ -232,14 +234,20 @@ public class ApplicationMasterService extends AbstractService implements
   public RegisterApplicationMasterResponse registerApplicationMaster(
       RegisterApplicationMasterRequest request) throws YarnException,
       IOException {
-
+	  LOG.info("receive registerAM request");  // to remove
+	  
     AMRMTokenIdentifier amrmTokenIdentifier = authorizeRequest();
+    if(amrmTokenIdentifier != null)
+    	LOG.info("amrmTokenIdentifier get" );  // to remove
+    
     ApplicationAttemptId applicationAttemptId =
-        amrmTokenIdentifier.getApplicationAttemptId();
-
+    		amrmTokenIdentifier.getApplicationAttemptId();
+    LOG.info("applicationAttemptId: " + applicationAttemptId.toString());  // to remove
+    
     ApplicationId appID = applicationAttemptId.getApplicationId();
     AllocateResponseLock lock = responseMap.get(applicationAttemptId);
     if (lock == null) {
+    	LOG.info("lock = null");  // to remove
       RMAuditLogger.logFailure(this.rmContext.getRMApps().get(appID).getUser(),
           AuditConstants.REGISTER_AM, "Application doesn't exist in cache "
               + applicationAttemptId, "ApplicationMasterService",
@@ -251,6 +259,7 @@ public class ApplicationMasterService extends AbstractService implements
     // Allow only one thread in AM to do registerApp at a time.
     synchronized (lock) {
       AllocateResponse lastResponse = lock.getAllocateResponse();
+      LOG.info("get lastResponse: " + lastResponse.toString()); // to remove
       if (hasApplicationMasterRegistered(applicationAttemptId)) {
         String message =
             "Application Master is already registered : "
@@ -302,6 +311,7 @@ public class ApplicationMasterService extends AbstractService implements
           ((AbstractYarnScheduler) rScheduler)
             .getTransferredContainers(applicationAttemptId);
       if (!transferredContainers.isEmpty()) {
+    	  LOG.info("transferredContainers is not empty"); // to remove
         response.setContainersFromPreviousAttempts(transferredContainers);
         List<NMToken> nmTokens = new ArrayList<NMToken>();
         for (Container container : transferredContainers) {
@@ -320,6 +330,8 @@ public class ApplicationMasterService extends AbstractService implements
             }
           }
         }
+        LOG.info("nmTokens: " + nmTokens.toString()); // to remove
+        
         response.setNMTokensFromPreviousAttempts(nmTokens);
         LOG.info("Application " + appID + " retrieved "
             + transferredContainers.size() + " containers from previous"
@@ -414,15 +426,107 @@ public class ApplicationMasterService extends AbstractService implements
     return hasApplicationMasterRegistered;
   }
 
-  @Override
-  public AllocateResponse allocate(AllocateRequest request)
-      throws YarnException, IOException {
 
-    AMRMTokenIdentifier amrmTokenIdentifier = authorizeRequest();
+  public AMRMTokenIdentifier getAMRMTokenForUMS(ApplicationAttemptId appAttemptId)
+		  throws ApplicationNotFoundException, IOException{
+	  ApplicationId applicationId = appAttemptId.getApplicationId();
+	    RMApp application = this.rmContext.getRMApps().get(applicationId);
+	    if (application == null) {
+	      // If the RM doesn't have the application, throw
+	      // ApplicationNotFoundException and let client to handle.
+	      throw new ApplicationNotFoundException("Application with id '"
+	          + applicationId + "' doesn't exist in RM.");
+	    }
+	    RMAppAttempt currentAttempt = application.getCurrentAppAttempt();
+	    AMRMTokenIdentifier amrmToken = null;
+        if (currentAttempt != null) {
+                Token<AMRMTokenIdentifier> token = currentAttempt.getAMRMToken();
+                if (token != null) {
+                	amrmToken = token.decodeIdentifier();
+                }
+            }
+        if (!hasApplicationMasterRegistered(appAttemptId)) {
+        	LOG.info("AM registration " + appAttemptId);
+        	LOG.info("host "+ currentAttempt.getHost() + " port "+ currentAttempt.getRpcPort() 
+        			+ " url "+ currentAttempt.getTrackingUrl()); 
+        	this.rmContext
+        	.getDispatcher()
+        	.getEventHandler()
+        	.handle(
+        			new RMAppAttemptRegistrationEvent(appAttemptId, currentAttempt
+        					.getHost(), currentAttempt.getRpcPort(), currentAttempt.getTrackingUrl()));
+        	RMAuditLogger.logSuccess(application.getUser(), AuditConstants.REGISTER_AM,
+        			"ApplicationMasterService", applicationId, appAttemptId);
+        }
+        
+        // Pick up min/max resource from scheduler...
+        RegisterApplicationMasterResponse response = recordFactory
+            .newRecordInstance(RegisterApplicationMasterResponse.class);
+        response.setMaximumResourceCapability(rScheduler
+            .getMaximumResourceCapability());
+        response.setApplicationACLs(application.getRMAppAttempt(appAttemptId)
+            .getSubmissionContext().getAMContainerSpec().getApplicationACLs());
+        response.setQueue(application.getQueue());
+        if (UserGroupInformation.isSecurityEnabled()) {
+          LOG.info("Setting client token master key");
+          response.setClientToAMTokenMasterKey(java.nio.ByteBuffer.wrap(rmContext
+              .getClientToAMTokenSecretManager()
+              .getMasterKey(appAttemptId).getEncoded()));        
+        }
+        
+        // For work-preserving AM restart, retrieve previous attempts' containers
+        // and corresponding NM tokens.
+        List<Container> transferredContainers =
+            ((AbstractYarnScheduler) rScheduler)
+              .getTransferredContainers(appAttemptId);
+        if (!transferredContainers.isEmpty()) {
+      	  LOG.info("transferredContainers is not empty"); // to remove
+          response.setContainersFromPreviousAttempts(transferredContainers);
+          List<NMToken> nmTokens = new ArrayList<NMToken>();
+          for (Container container : transferredContainers) {
+            try {
+              NMToken token = rmContext.getNMTokenSecretManager()
+                  .createAndGetNMToken(application.getUser(), appAttemptId,
+                      container);
+              if (null != token) {
+                nmTokens.add(token);
+              }
+            } catch (IllegalArgumentException e) {
+              // if it's a DNS issue, throw UnknowHostException directly and that
+              // will be automatically retried by RMProxy in RPC layer.
+              if (e.getCause() instanceof UnknownHostException) {
+                throw (UnknownHostException) e.getCause();
+              }
+            }
+          }
+          LOG.info("nmTokens: " + nmTokens.toString()); // to remove
+          
+          response.setNMTokensFromPreviousAttempts(nmTokens);
+          LOG.info("Application " + application + " retrieved "
+              + transferredContainers.size() + " containers from previous"
+              + " attempts and " + nmTokens.size() + " NM tokens.");
+        }
 
-    ApplicationAttemptId appAttemptId =
-        amrmTokenIdentifier.getApplicationAttemptId();
-    ApplicationId applicationId = appAttemptId.getApplicationId();
+        response.setSchedulerResourceTypes(rScheduler
+          .getSchedulingResourceTypes());
+        
+	  return amrmToken;
+  }
+  
+  public AllocateResponse allocateForUMS(AllocateRequest request)
+		  throws YarnException, IOException{
+	  LOG.info("AllocateRequest from UMS");
+	  
+	  ApplicationAttemptId appAttemptId = request.getApplicationAttemptId();
+	  LOG.info("appAttemptId: " + appAttemptId.toString());
+	  ApplicationId applicationId = appAttemptId.getApplicationId();
+	  LOG.info("applicationId: "  + applicationId.toString());
+	  
+    AMRMTokenIdentifier amrmTokenIdentifier = getAMRMTokenForUMS(appAttemptId);
+    if(amrmTokenIdentifier != null)
+    	LOG.info("amrmTokenIdentifier found: " + amrmTokenIdentifier.toString());
+    else 
+    	LOG.info("amrmTokenIdentifier not found");
 
     this.amLivelinessMonitor.receivedPing(appAttemptId);
 
@@ -432,8 +536,9 @@ public class ApplicationMasterService extends AbstractService implements
       String message =
           "Application attempt " + appAttemptId
               + " doesn't exist in ApplicationMasterService cache.";
-      LOG.error(message);
-      throw new ApplicationAttemptNotFoundException(message);
+      LOG.info(message);
+      //LOG.error(message);
+      //throw new ApplicationAttemptNotFoundException(message);
     }
     synchronized (lock) {
       AllocateResponse lastResponse = lock.getAllocateResponse();
@@ -442,11 +547,14 @@ public class ApplicationMasterService extends AbstractService implements
             "AM is not registered for known application attempt: " + appAttemptId
                 + " or RM had restarted after AM registered . AM should re-register.";
         LOG.info(message);
+        //registerAppAttempt(appAttemptId);
+        /*
         RMAuditLogger.logFailure(
           this.rmContext.getRMApps().get(appAttemptId.getApplicationId())
             .getUser(), AuditConstants.AM_ALLOCATE, "",
           "ApplicationMasterService", message, applicationId, appAttemptId);
         throw new ApplicationMasterNotRegisteredException(message);
+        */
       }
 
       if ((request.getResponseId() + 1) == lastResponse.getResponseId()) {
@@ -469,11 +577,12 @@ public class ApplicationMasterService extends AbstractService implements
         request.setProgress(1);
       }
 
+      /*
       // Send the status update to the appAttempt.
       this.rmContext.getDispatcher().getEventHandler().handle(
           new RMAppAttemptStatusupdateEvent(appAttemptId, request
               .getProgress()));
-
+       */
       List<ResourceRequest> ask = request.getAskList();
       List<ContainerId> release = request.getReleaseList();
 
@@ -491,6 +600,9 @@ public class ApplicationMasterService extends AbstractService implements
       // set label expression for Resource Requests if resourceName=ANY 
       ApplicationSubmissionContext asc = app.getApplicationSubmissionContext();
       for (ResourceRequest req : ask) {
+    	  if(req.getResourceName() != null){
+        	  LOG.info("ask in UAM: " + req.getResourceName());
+    	  }
         if (null == req.getNodeLabelExpression()
             && ResourceRequest.ANY.equals(req.getResourceName())) {
           req.setNodeLabelExpression(asc.getNodeLabelExpression());
@@ -530,6 +642,229 @@ public class ApplicationMasterService extends AbstractService implements
       Allocation allocation =
           this.rScheduler.allocate(appAttemptId, ask, release, 
               blacklistAdditions, blacklistRemovals);
+      
+      for(Container c : allocation.getContainers()){
+    	  LOG.info("allocation node in UAM: " + c.getNodeId().getHost());
+      }
+
+      if (!blacklistAdditions.isEmpty() || !blacklistRemovals.isEmpty()) {
+        LOG.info("blacklist are updated in Scheduler." +
+            "blacklistAdditions: " + blacklistAdditions + ", " +
+            "blacklistRemovals: " + blacklistRemovals);
+      }
+      RMAppAttempt appAttempt = app.getRMAppAttempt(appAttemptId);
+      AllocateResponse allocateResponse =
+          recordFactory.newRecordInstance(AllocateResponse.class);
+      if (!allocation.getContainers().isEmpty()) {
+        allocateResponse.setNMTokens(allocation.getNMTokens());
+      }
+
+      // update the response with the deltas of node status changes
+      List<RMNode> updatedNodes = new ArrayList<RMNode>();
+      if(app.pullRMNodeUpdates(updatedNodes) > 0) {
+        List<NodeReport> updatedNodeReports = new ArrayList<NodeReport>();
+        for(RMNode rmNode: updatedNodes) {
+          SchedulerNodeReport schedulerNodeReport =  
+              rScheduler.getNodeReport(rmNode.getNodeID());
+          Resource used = BuilderUtils.newResource(0, 0);
+          int numContainers = 0;
+          if (schedulerNodeReport != null) {
+            used = schedulerNodeReport.getUsedResource();
+            numContainers = schedulerNodeReport.getNumContainers();
+          }
+          NodeId nodeId = rmNode.getNodeID();
+          NodeReport report =
+              BuilderUtils.newNodeReport(nodeId, rmNode.getState(),
+                  rmNode.getHttpAddress(), rmNode.getRackName(), used,
+                  rmNode.getTotalCapability(), numContainers,
+                  rmNode.getHealthReport(), rmNode.getLastHealthReportTime(),
+                  rmNode.getNodeLabels());
+
+          updatedNodeReports.add(report);
+        }
+        allocateResponse.setUpdatedNodes(updatedNodeReports);
+      }
+
+      allocateResponse.setAllocatedContainers(allocation.getContainers());
+      allocateResponse.setCompletedContainersStatuses(appAttempt
+          .pullJustFinishedContainers());
+      allocateResponse.setResponseId(lastResponse.getResponseId() + 1);
+      allocateResponse.setAvailableResources(allocation.getResourceLimit());
+
+      allocateResponse.setNumClusterNodes(this.rScheduler.getNumClusterNodes());
+
+      // add preemption to the allocateResponse message (if any)
+      allocateResponse
+          .setPreemptionMessage(generatePreemptionMessage(allocation));
+
+      // update AMRMToken if the token is rolled-up
+      MasterKeyData nextMasterKey =
+          this.rmContext.getAMRMTokenSecretManager().getNextMasterKeyData();
+
+      if (nextMasterKey != null
+          && nextMasterKey.getMasterKey().getKeyId() != amrmTokenIdentifier
+            .getKeyId()) {
+        Token<AMRMTokenIdentifier> amrmToken =
+            rmContext.getAMRMTokenSecretManager().createAndGetAMRMToken(
+              appAttemptId);
+        ((RMAppAttemptImpl)appAttempt).setAMRMToken(amrmToken);
+        allocateResponse.setAMRMToken(org.apache.hadoop.yarn.api.records.Token
+          .newInstance(amrmToken.getIdentifier(), amrmToken.getKind()
+            .toString(), amrmToken.getPassword(), amrmToken.getService()
+            .toString()));
+        LOG.info("The AMRMToken has been rolled-over. Send new AMRMToken back"
+            + " to application: " + applicationId);
+      }
+
+      /*
+       * As we are updating the response inside the lock object so we don't
+       * need to worry about unregister call occurring in between (which
+       * removes the lock object).
+       */
+      lock.setAllocateResponse(allocateResponse);
+      LOG.info("allocate for UMS success: " + allocateResponse.toString());
+      return allocateResponse;
+    }  
+  }
+  
+  @Override
+  public AllocateResponse allocate(AllocateRequest request)
+      throws YarnException, IOException {
+	  LOG.info("AMS receive AllocateRequest");
+	  
+	  /*
+	  if(request.getUMS()){
+		  return allocateForUMS(request);
+	  }
+	  LOG.info("isUMS is false" );
+	  */
+	  
+    AMRMTokenIdentifier amrmTokenIdentifier = authorizeRequest();
+
+    ApplicationAttemptId appAttemptId =
+        amrmTokenIdentifier.getApplicationAttemptId();
+    ApplicationId applicationId = appAttemptId.getApplicationId();
+    
+    LOG.info("appAttemptId: "  + appAttemptId.toString());
+
+    this.amLivelinessMonitor.receivedPing(appAttemptId);
+
+    /* check if its in cache */
+    AllocateResponseLock lock = responseMap.get(appAttemptId);
+    if (lock == null) {
+      String message =
+          "Application attempt " + appAttemptId
+              + " doesn't exist in ApplicationMasterService cache.";
+      LOG.error(message);
+      throw new ApplicationAttemptNotFoundException(message);
+    }
+    synchronized (lock) {
+      AllocateResponse lastResponse = lock.getAllocateResponse();
+      LOG.info("last responseId'" + lastResponse.getResponseId());
+      
+      if (!hasApplicationMasterRegistered(appAttemptId)) {
+        String message =
+            "AM is not registered for known application attempt: " + appAttemptId
+                + " or RM had restarted after AM registered . AM should re-register.";
+        LOG.info(message);
+        RMAuditLogger.logFailure(
+          this.rmContext.getRMApps().get(appAttemptId.getApplicationId())
+            .getUser(), AuditConstants.AM_ALLOCATE, "",
+          "ApplicationMasterService", message, applicationId, appAttemptId);
+        throw new ApplicationMasterNotRegisteredException(message);
+      }
+
+      if ((request.getResponseId() + 1) == lastResponse.getResponseId()) {
+        /* old heartbeat */
+    	  LOG.info("return lastResponse");
+        return lastResponse;
+      } else if (request.getResponseId() + 1 < lastResponse.getResponseId()) {
+        String message =
+            "Invalid responseId in AllocateRequest from application attempt: "
+                + appAttemptId + ", expect responseId to be "
+                + (lastResponse.getResponseId() + 1);
+        throw new InvalidApplicationMasterRequestException(message);
+      }
+
+      //filter illegal progress values
+      float filteredProgress = request.getProgress();
+      if (Float.isNaN(filteredProgress) || filteredProgress == Float.NEGATIVE_INFINITY
+        || filteredProgress < 0) {
+    	  LOG.info("AMS tag1");
+         request.setProgress(0);
+      } else if (filteredProgress > 1 || filteredProgress == Float.POSITIVE_INFINITY) {
+    	  LOG.info("AMS tag2");
+        request.setProgress(1);
+      }
+
+      // Send the status update to the appAttempt.
+      this.rmContext.getDispatcher().getEventHandler().handle(
+          new RMAppAttemptStatusupdateEvent(appAttemptId, request
+              .getProgress()));
+
+      List<ResourceRequest> ask = request.getAskList();
+      List<ContainerId> release = request.getReleaseList();
+
+      ResourceBlacklistRequest blacklistRequest =
+          request.getResourceBlacklistRequest();
+      List<String> blacklistAdditions =
+          (blacklistRequest != null) ?
+              blacklistRequest.getBlacklistAdditions() : Collections.EMPTY_LIST;
+      List<String> blacklistRemovals =
+          (blacklistRequest != null) ?
+              blacklistRequest.getBlacklistRemovals() : Collections.EMPTY_LIST;
+      RMApp app =
+          this.rmContext.getRMApps().get(applicationId);
+      
+      // set label expression for Resource Requests if resourceName=ANY 
+      ApplicationSubmissionContext asc = app.getApplicationSubmissionContext();
+      for (ResourceRequest req : ask) {
+    	  if(req.getResourceName() != null){
+        	  LOG.info("ask in LAM: " + req.getResourceName());
+    	  }
+        if (null == req.getNodeLabelExpression()
+            && ResourceRequest.ANY.equals(req.getResourceName())) {
+          req.setNodeLabelExpression(asc.getNodeLabelExpression());
+        }
+      }
+              
+      // sanity check
+      try {
+        RMServerUtils.normalizeAndValidateRequests(ask,
+            rScheduler.getMaximumResourceCapability(), app.getQueue(),
+            rScheduler, rmContext);
+      } catch (InvalidResourceRequestException e) {
+        LOG.warn("Invalid resource ask by application " + appAttemptId, e);
+        throw e;
+      }
+      
+      try {
+        RMServerUtils.validateBlacklistRequest(blacklistRequest);
+      }  catch (InvalidResourceBlacklistRequestException e) {
+        LOG.warn("Invalid blacklist request by application " + appAttemptId, e);
+        throw e;
+      }
+
+      // In the case of work-preserving AM restart, it's possible for the
+      // AM to release containers from the earlier attempt.
+      if (!app.getApplicationSubmissionContext()
+        .getKeepContainersAcrossApplicationAttempts()) {
+        try {
+          RMServerUtils.validateContainerReleaseRequest(release, appAttemptId);
+        } catch (InvalidContainerReleaseException e) {
+          LOG.warn("Invalid container release by application " + appAttemptId, e);
+          throw e;
+        }
+      }
+
+      // Send new requests to appAttempt.
+      Allocation allocation =
+          this.rScheduler.allocate(appAttemptId, ask, release, 
+              blacklistAdditions, blacklistRemovals);
+      
+      for(Container c : allocation.getContainers()){
+    	  LOG.info("allocation node in LAM: " + c.getNodeId().getHost());
+      }
 
       if (!blacklistAdditions.isEmpty() || !blacklistRemovals.isEmpty()) {
         LOG.info("blacklist are updated in Scheduler." +

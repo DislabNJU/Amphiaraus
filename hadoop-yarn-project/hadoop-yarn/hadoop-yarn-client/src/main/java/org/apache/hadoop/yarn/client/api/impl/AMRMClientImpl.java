@@ -49,10 +49,13 @@ import org.apache.hadoop.yarn.api.protocolrecords.FinishApplicationMasterRequest
 import org.apache.hadoop.yarn.api.protocolrecords.FinishApplicationMasterResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.RegisterApplicationMasterRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.RegisterApplicationMasterResponse;
+import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
+import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.ContainerStatus;
 import org.apache.hadoop.yarn.api.records.FinalApplicationStatus;
 import org.apache.hadoop.yarn.api.records.NMToken;
+import org.apache.hadoop.yarn.api.records.NodeReport;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.ResourceBlacklistRequest;
@@ -72,6 +75,10 @@ import org.apache.hadoop.yarn.util.RackResolver;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.sun.tools.classfile.InnerClasses_attribute.Info;
+import com.sun.tools.javac.comp.Infer;
+
+import org.apache.hadoop.yarn.client.api.UnmanagedAMClient;
 
 @Private
 @Unstable
@@ -82,12 +89,18 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
       Collections.singletonList(ResourceRequest.ANY);
   
   private int lastResponseId = 0;
+  
+  private int lastResponseIdRemote = 0;
 
   protected String appHostName;
   protected int appHostPort;
   protected String appTrackingUrl;
 
   protected ApplicationMasterProtocol rmClient;
+  boolean isRemote;
+  //boolean isUnmanaged;
+  UnmanagedAMClient uAMClient;
+  Thread ram;
   protected Resource clusterAvailableResources;
   protected int clusterNodeCount;
   
@@ -183,8 +196,21 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
   protected void serviceStart() throws Exception {
     final YarnConfiguration conf = new YarnConfiguration(getConfig());
     try {
-      rmClient =
-          ClientRMProxy.createRMProxy(conf, ApplicationMasterProtocol.class);
+    	isRemote = conf.getBoolean("yarn.isRemote", false);
+    	//isUnmanaged = conf.getBoolean("yarn.isUnmanaged", false);
+    	LOG.info("isRemote: " + isRemote);
+       rmClient =
+           ClientRMProxy.createRMProxy(conf, ApplicationMasterProtocol.class);
+    	LOG.info("rmClient create over");
+		
+    	if(isRemote){
+    		LOG.info("new UAM");
+    		uAMClient = new UnmanagedAMClient();
+    		uAMClient.init(conf);
+    		uAMClient.start();
+    		//runRAM();
+    	}
+    	
     } catch (IOException e) {
       throw new YarnRuntimeException(e);
     }
@@ -196,8 +222,15 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
     if (this.rmClient != null) {
       RPC.stopProxy(this.rmClient);
     }
+    if (isRemote) {
+    	uAMClient.stop();
+       // ram.join();
+      }
+
     super.serviceStop();
   }
+  
+
   
   @Override
   public RegisterApplicationMasterResponse registerApplicationMaster(
@@ -206,6 +239,7 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
     this.appHostName = appHostName;
     this.appHostPort = appHostPort;
     this.appTrackingUrl = appTrackingUrl;
+    
     Preconditions.checkArgument(appHostName != null,
         "The host name should not be null");
     Preconditions.checkArgument(appHostPort >= -1, "Port number of the host"
@@ -219,40 +253,221 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
     RegisterApplicationMasterRequest request =
         RegisterApplicationMasterRequest.newInstance(this.appHostName,
             this.appHostPort, this.appTrackingUrl);
-    RegisterApplicationMasterResponse response =
-        rmClient.registerApplicationMaster(request);
+    
+    RegisterApplicationMasterResponse response = rmClient.registerApplicationMaster(request);
+
     synchronized (this) {
       lastResponseId = 0;
       if (!response.getNMTokensFromPreviousAttempts().isEmpty()) {
         populateNMTokens(response.getNMTokensFromPreviousAttempts());
       }
     }
+    if(isRemote){
+    	startUAM();
+    }
     return response;
   }
+  
+  private void startUAM(){
+	  uAMClient.setHostinfo(this.appHostName, this.appHostPort, this.appTrackingUrl);
+	  uAMClient.startUAM();
+  }
 
+  public AllocateResponse allocateLocal(float progressIndicator)
+		  throws YarnException, IOException{
+	  LOG.info("allocate for local");
+	  Preconditions.checkArgument(progressIndicator >= 0,
+		        "Progress indicator should not be negative");
+		    AllocateResponse allocateResponse = null;
+		    List<ResourceRequest> askList = null;
+		    List<ContainerId> releaseList = null;
+		    AllocateRequest allocateRequest = null;
+		    List<String> blacklistToAdd = new ArrayList<String>();
+		    List<String> blacklistToRemove = new ArrayList<String>();
+		    
+		    try {
+		      synchronized (this) {
+		        askList = new ArrayList<ResourceRequest>(ask.size());
+		        for(ResourceRequest r : ask) {
+		          // create a copy of ResourceRequest as we might change it while the 
+		          // RPC layer is using it to send info across
+		          askList.add(ResourceRequest.newInstance(r.getPriority(),
+		              r.getResourceName(), r.getCapability(), r.getNumContainers(),
+		              r.getRelaxLocality(), r.getNodeLabelExpression()));
+		        }
+		        releaseList = new ArrayList<ContainerId>(release);
+		        // optimistically clear this collection assuming no RPC failure
+		        ask.clear();
+		        release.clear();
+
+		        blacklistToAdd.addAll(blacklistAdditions);
+		        blacklistToRemove.addAll(blacklistRemovals);
+		        
+		        ResourceBlacklistRequest blacklistRequest = 
+		            (blacklistToAdd != null) || (blacklistToRemove != null) ? 
+		            ResourceBlacklistRequest.newInstance(blacklistToAdd,
+		                blacklistToRemove) : null;
+		        
+		        allocateRequest =
+		            AllocateRequest.newInstance(lastResponseId, progressIndicator,
+		              askList, releaseList, blacklistRequest);
+		        // clear blacklistAdditions and blacklistRemovals before 
+		        // unsynchronized part
+		        blacklistAdditions.clear();
+		        blacklistRemovals.clear();
+		      }
+
+		      try {
+		    	  long start = System.currentTimeMillis();
+		    	  allocateResponse = rmClient.allocate(allocateRequest);
+		    	  long end = System.currentTimeMillis();
+		    	  LOG.info("response time: " + String.valueOf(end - start));
+		      } catch (ApplicationMasterNotRegisteredException e) {
+		        LOG.warn("ApplicationMaster is out of sync with ResourceManager,"
+		            + " hence resyncing.");
+		        synchronized (this) {
+		          release.addAll(this.pendingRelease);
+		          blacklistAdditions.addAll(this.blacklistedNodes);
+		          for (Map<String, TreeMap<Resource, ResourceRequestInfo>> rr : remoteRequestsTable
+		            .values()) {
+		            for (Map<Resource, ResourceRequestInfo> capabalities : rr.values()) {
+		              for (ResourceRequestInfo request : capabalities.values()) {
+		                addResourceRequestToAsk(request.remoteRequest);
+		              }
+		            }
+		          }
+		        }
+		        // re register with RM
+		        registerApplicationMaster();
+		        allocateResponse = allocate(progressIndicator);
+		        return allocateResponse;
+		      }
+
+		      synchronized (this) {
+		        // update these on successful RPC
+		        clusterNodeCount = allocateResponse.getNumClusterNodes();
+		        lastResponseId = allocateResponse.getResponseId();
+		        clusterAvailableResources = allocateResponse.getAvailableResources();
+		        if (!allocateResponse.getNMTokens().isEmpty()) {
+		          populateNMTokens(allocateResponse.getNMTokens());
+		        }
+		        if (allocateResponse.getAMRMToken() != null) {
+		          updateAMRMToken(allocateResponse.getAMRMToken());
+		        }
+		        if (!pendingRelease.isEmpty()
+		            && !allocateResponse.getCompletedContainersStatuses().isEmpty()) {
+		          removePendingReleaseRequests(allocateResponse
+		              .getCompletedContainersStatuses());
+		        }
+		      }
+		    } finally {
+		      // TODO how to differentiate remote yarn exception vs error in rpc
+		      if(allocateResponse == null) {
+		        // we hit an exception in allocate()
+		        // preserve ask and release for next call to allocate()
+		        synchronized (this) {
+		          release.addAll(releaseList);
+		          // requests could have been added or deleted during call to allocate
+		          // If requests were added/removed then there is nothing to do since
+		          // the ResourceRequest object in ask would have the actual new value.
+		          // If ask does not have this ResourceRequest then it was unchanged and
+		          // so we can add the value back safely.
+		          // This assumes that there will no concurrent calls to allocate() and
+		          // so we dont have to worry about ask being changed in the
+		          // synchronized block at the beginning of this method.
+		          for(ResourceRequest oldAsk : askList) {
+		            if(!ask.contains(oldAsk)) {
+		              ask.add(oldAsk);
+		            }
+		          }
+		          
+		          blacklistAdditions.addAll(blacklistToAdd);
+		          blacklistRemovals.addAll(blacklistToRemove);
+		        }
+		      }
+		    }
+		return allocateResponse;
+  }
+  
   @Override
   public AllocateResponse allocate(float progressIndicator) 
       throws YarnException, IOException {
+	  if(!isRemote){
+		  return allocateLocal(progressIndicator);
+	  }
+	  LOG.info("allocate for remote");
+	  
     Preconditions.checkArgument(progressIndicator >= 0,
         "Progress indicator should not be negative");
+    
     AllocateResponse allocateResponse = null;
     List<ResourceRequest> askList = null;
-    List<ContainerId> releaseList = null;
+    List<ContainerId> releaseList = new ArrayList<ContainerId>();;
     AllocateRequest allocateRequest = null;
     List<String> blacklistToAdd = new ArrayList<String>();
     List<String> blacklistToRemove = new ArrayList<String>();
     
+    AllocateResponse allocateResponseRemote = null;
+    List<ResourceRequest> askListRemote = null;
+    List<ContainerId> releaseListRemote = new ArrayList<ContainerId>();;
+    AllocateRequest allocateRequestRemote = null;
+    List<String> blacklistToAddRemote = new ArrayList<String>();
+    List<String> blacklistToRemoveRemote = new ArrayList<String>();
+    
+    AllocateResponse allocateResponseMerged = null;
+    
     try {
       synchronized (this) {
-        askList = new ArrayList<ResourceRequest>(ask.size());
+        askList = new ArrayList<ResourceRequest>();
+        askListRemote = new ArrayList<ResourceRequest>();
         for(ResourceRequest r : ask) {
           // create a copy of ResourceRequest as we might change it while the 
           // RPC layer is using it to send info across
-          askList.add(ResourceRequest.newInstance(r.getPriority(),
-              r.getResourceName(), r.getCapability(), r.getNumContainers(),
-              r.getRelaxLocality(), r.getNodeLabelExpression()));
+        	String resourceName = r.getResourceName();
+        	LOG.info("resourceName in ask: " + resourceName);
+        	if(resourceName.contains(ResourceRequest.ANY)){
+
+        		LOG.info("resolveName in UAM: " + resourceName);
+        		askListRemote.add(ResourceRequest.newInstance(r.getPriority(),
+        				ResourceRequest.ANY, r.getCapability(), r.getNumContainers(),
+        				r.getRelaxLocality(), r.getNodeLabelExpression()));
+
+        		askList.add(ResourceRequest.newInstance(r.getPriority(),
+        				ResourceRequest.ANY, r.getCapability(), r.getNumContainers(),
+        				r.getRelaxLocality(), r.getNodeLabelExpression()));
+
+        	}else if(resourceName.contains("hdfs")){
+        	//else if(resourceName.equals("slave-2-5") || resourceName.equals("slave-2-6") ||resourceName.equals("slave-2-7")
+        	//		||resourceName.equals("slave-2-8") || resourceName.equals("slave-2-9") || resourceName.equals("slave-2-10")){
+
+        		//String resolveName = resourceName;
+        		
+        		int idx = resourceName.indexOf(":");
+        		String resolveName = resourceName.substring(idx + 3);
+        		r.setResourceName(resolveName);
+        		 
+        		LOG.info("resolveName in UAM: " + resourceName);
+        		askListRemote.add(ResourceRequest.newInstance(r.getPriority(),
+        				resolveName, r.getCapability(), r.getNumContainers(),
+        				r.getRelaxLocality(), r.getNodeLabelExpression()));
+        	}else {
+        		askList.add(ResourceRequest.newInstance(r.getPriority(),
+        				resourceName, r.getCapability(), r.getNumContainers(),
+        				r.getRelaxLocality(), r.getNodeLabelExpression()));
+        	}
+
         }
-        releaseList = new ArrayList<ContainerId>(release);
+        
+        ApplicationAttemptId remoteAppAttemptId = uAMClient.getApplicationAttemptId();
+        for(ContainerId r: release){
+        	if(r.getApplicationAttemptId().equals(remoteAppAttemptId)){
+        		releaseListRemote.add(r);
+        	}else{
+        		releaseList.add(r);
+        	}
+        }
+        //releaseList = new ArrayList<ContainerId>(release);
+        
         // optimistically clear this collection assuming no RPC failure
         ask.clear();
         release.clear();
@@ -264,10 +479,17 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
             (blacklistToAdd != null) || (blacklistToRemove != null) ? 
             ResourceBlacklistRequest.newInstance(blacklistToAdd,
                 blacklistToRemove) : null;
-        
+            
+            ResourceBlacklistRequest blacklistRequestRemote =  null;
+            
         allocateRequest =
             AllocateRequest.newInstance(lastResponseId, progressIndicator,
               askList, releaseList, blacklistRequest);
+        
+        allocateRequestRemote =
+                AllocateRequest.newInstance(lastResponseIdRemote, progressIndicator,
+                  askListRemote, releaseListRemote, blacklistRequestRemote);
+        
         // clear blacklistAdditions and blacklistRemovals before 
         // unsynchronized part
         blacklistAdditions.clear();
@@ -275,7 +497,25 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
       }
 
       try {
-        allocateResponse = rmClient.allocate(allocateRequest);
+    	  // if(isRemote){
+    	  LOG.info("request to remote RM");
+    	  allocateResponseRemote = uAMClient.allocate(allocateRequestRemote);
+    	  if(allocateRequestRemote != null){
+    		  LOG.info("remoteAllocateResponse get" );
+    	  }else {
+    		  LOG.info("remoteAllocateResponse null" );
+		}
+
+    	  //}else {
+    	  LOG.info("request to local RM");
+    	  allocateResponse = rmClient.allocate(allocateRequest);
+    	  if(allocateResponse != null){
+    		  LOG.info("localAllocateResponse get" );
+    	  }else {
+    		  LOG.info("localAllocateResponse null" );
+		}
+    	  //}   
+    	  
       } catch (ApplicationMasterNotRegisteredException e) {
         LOG.warn("ApplicationMaster is out of sync with ResourceManager,"
             + " hence resyncing.");
@@ -284,6 +524,7 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
           blacklistAdditions.addAll(this.blacklistedNodes);
           for (Map<String, TreeMap<Resource, ResourceRequestInfo>> rr : remoteRequestsTable
             .values()) {
+        	  LOG.info("tag1 in allocate");
             for (Map<Resource, ResourceRequestInfo> capabalities : rr.values()) {
               for (ResourceRequestInfo request : capabalities.values()) {
                 addResourceRequestToAsk(request.remoteRequest);
@@ -292,6 +533,7 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
           }
         }
         // re register with RM
+        LOG.info("re register with RM");
         registerApplicationMaster();
         allocateResponse = allocate(progressIndicator);
         return allocateResponse;
@@ -305,43 +547,139 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
         if (!allocateResponse.getNMTokens().isEmpty()) {
           populateNMTokens(allocateResponse.getNMTokens());
         }
+        
+        
         if (allocateResponse.getAMRMToken() != null) {
           updateAMRMToken(allocateResponse.getAMRMToken());
         }
+        
         if (!pendingRelease.isEmpty()
             && !allocateResponse.getCompletedContainersStatuses().isEmpty()) {
           removePendingReleaseRequests(allocateResponse
               .getCompletedContainersStatuses());
         }
+        if(allocateResponseRemote != null){
+            if (!allocateResponseRemote.getNMTokens().isEmpty()) {
+                populateNMTokens(allocateResponseRemote.getNMTokens());
+              }
+            
+            if (!pendingRelease.isEmpty()
+                    && !allocateResponseRemote.getCompletedContainersStatuses().isEmpty()) {
+                  removePendingReleaseRequests(allocateResponseRemote
+                      .getCompletedContainersStatuses());
+                }
+        }
+
+        allocateResponseMerged =  mergeAllocateResponse(allocateResponse, allocateResponseRemote);
+        LOG.info("Merge complete");
       }
     } finally {
-      // TODO how to differentiate remote yarn exception vs error in rpc
-      if(allocateResponse == null) {
-        // we hit an exception in allocate()
-        // preserve ask and release for next call to allocate()
-        synchronized (this) {
-          release.addAll(releaseList);
-          // requests could have been added or deleted during call to allocate
-          // If requests were added/removed then there is nothing to do since
-          // the ResourceRequest object in ask would have the actual new value.
-          // If ask does not have this ResourceRequest then it was unchanged and
-          // so we can add the value back safely.
-          // This assumes that there will no concurrent calls to allocate() and
-          // so we dont have to worry about ask being changed in the
-          // synchronized block at the beginning of this method.
-          for(ResourceRequest oldAsk : askList) {
-            if(!ask.contains(oldAsk)) {
-              ask.add(oldAsk);
-            }
-          }
-          
-          blacklistAdditions.addAll(blacklistToAdd);
-          blacklistRemovals.addAll(blacklistToRemove);
-        }
-      }
+    	synchronized (this) {
+    		// TODO how to differentiate remote yarn exception vs error in rpc
+    		if(allocateResponse == null) {
+    			LOG.info("localResponse is null");
+    			// we hit an exception in allocate()
+    			// preserve ask and release for next call to allocate()
+    			release.addAll(releaseList);
+    			// requests could have been added or deleted during call to allocate
+    			// If requests were added/removed then there is nothing to do since
+    			// the ResourceRequest object in ask would have the actual new value.
+    			// If ask does not have this ResourceRequest then it was unchanged and
+    			// so we can add the value back safely.
+    			// This assumes that there will no concurrent calls to allocate() and
+    			// so we dont have to worry about ask being changed in the
+    			// synchronized block at the beginning of this method.
+    			for(ResourceRequest oldAsk : askList) {
+    				if(!ask.contains(oldAsk)) {
+    					ask.add(oldAsk);
+    				}
+    			}
+    			blacklistAdditions.addAll(blacklistToAdd);
+    			blacklistRemovals.addAll(blacklistToRemove);
+    		}
+    		
+    		if(allocateResponseRemote == null) {
+    			LOG.info("remoteResponse is null");
+    			release.addAll(releaseListRemote);
+    			for(ResourceRequest oldAsk : askListRemote) {
+    				if(!ask.contains(oldAsk)) {
+    					ask.add(oldAsk);
+    				}
+    			}
+    			blacklistAdditions.addAll(blacklistToAddRemote);
+    			blacklistRemovals.addAll(blacklistToRemoveRemote);
+    		}
+    	}
+      
+      
     }
-    return allocateResponse;
+    
+    return allocateResponseMerged;
   }
+  
+  /*
+   * need merge
+   * 
+   * NMTokens List<NMToken>
+   * updatedNodeReports List<NodeReport>
+   * AllocatedContainers  List<Container>
+   * CompletedContainersStatuses List<ContainerStatus>
+   * 
+   * don't need merge:
+   * 
+   * ResponseId int
+   * AvailableResources resource 
+   * NumClusterNodes int 
+   * PreemptionMessage PreemptionMessage
+   * AMRMToken Token
+   */
+  private AllocateResponse mergeAllocateResponse(AllocateResponse responseBase, AllocateResponse response){
+	  LOG.info("Mergeing response");
+	  /*
+	  List<NMToken> nmTokensMerged=  responseBase.getNMTokens();
+	  nmTokensMerged.addAll(response.getNMTokens());
+	  
+	  List<NodeReport> updatedNodeReportsMerged = responseBase.getUpdatedNodes();
+	  updatedNodeReportsMerged.addAll(response.getUpdatedNodes());
+	  
+	  List<Container>allocatedContainersMerged = responseBase.getAllocatedContainers();
+	  allocatedContainersMerged.addAll(response.getAllocatedContainers());
+	  
+	  List<ContainerStatus> CompletedContainersStatusesMerged = responseBase.getCompletedContainersStatuses();
+	  CompletedContainersStatusesMerged.addAll(response.getCompletedContainersStatuses());
+	  */
+	  if(responseBase != null && response != null){
+		  
+		  List<NMToken> token = responseBase.getNMTokens();
+		  if(token != null && !token.isEmpty()){
+			  responseBase.setNMTokens(token);
+		  }
+
+		  List<NodeReport> report = response.getUpdatedNodes();
+		  if(report != null && !report.isEmpty()){
+			  responseBase.setUpdatedNodes(report);
+		  }
+
+		  List<Container> containers = response.getAllocatedContainers();
+		  if(containers!= null && !containers.isEmpty()){
+			  responseBase.setAllocatedContainers(containers);
+		  }
+
+		  List<ContainerStatus> completed = response.getCompletedContainersStatuses();
+		  if(completed != null && !completed.isEmpty()){
+			  responseBase.setCompletedContainersStatuses(completed);  
+		  }
+		  
+		  return responseBase;
+	  }else if(responseBase != null){
+		  return responseBase;
+	  }else {
+		  return response;
+	}
+
+	  
+  }
+  
 
   protected void removePendingReleaseRequests(
       List<ContainerStatus> completedContainersStatuses) {
@@ -375,8 +713,14 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
           appTrackingUrl);
     try {
       while (true) {
-        FinishApplicationMasterResponse response =
-            rmClient.finishApplicationMaster(request);
+    	  
+    	  FinishApplicationMasterResponse response;
+    	  if(isRemote){
+        	  LOG.info("uAMClient start unregisterApplicationMaster");
+        	  uAMClient.finishUAM();
+    	  }
+    	  response = rmClient.finishApplicationMaster(request);
+      
         if (response.getIsUnregistered()) {
           break;
         }

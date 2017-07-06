@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.hadoop.classification.InterfaceAudience.Public;
 import org.apache.hadoop.classification.InterfaceStability.Stable;
 import org.apache.hadoop.yarn.api.ApplicationMasterProtocol;
+import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.ResourceBlacklistRequest;
@@ -54,7 +55,7 @@ import org.apache.hadoop.yarn.util.Records;
 @Public
 @Stable
 public abstract class AllocateRequest {
-
+	
   @Public
   @Stable
   public static AllocateRequest newInstance(int responseID, float appProgress,
@@ -79,6 +80,7 @@ public abstract class AllocateRequest {
     allocateRequest.setReleaseList(containersToBeReleased);
     allocateRequest.setResourceBlacklistRequest(resourceBlacklistRequest);
     allocateRequest.setIncreaseRequests(increaseRequests);
+    allocateRequest.setUMS(false);
     return allocateRequest;
   }
   
@@ -201,4 +203,14 @@ public abstract class AllocateRequest {
   @Stable
   public abstract void setIncreaseRequests(
       List<ContainerResourceIncreaseRequest> increaseRequests);
+  
+  public abstract void setApplicationAttemptId(
+		  ApplicationAttemptId appAttemptId);
+  
+  public abstract ApplicationAttemptId getApplicationAttemptId();
+  
+  public abstract void setUMS(boolean UMS);
+  
+  public abstract boolean getUMS();
+  
 }

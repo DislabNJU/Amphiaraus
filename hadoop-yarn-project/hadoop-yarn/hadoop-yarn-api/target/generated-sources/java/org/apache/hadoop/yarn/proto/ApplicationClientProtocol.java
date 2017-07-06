@@ -192,6 +192,14 @@ public final class ApplicationClientProtocol {
           org.apache.hadoop.yarn.proto.YarnServiceProtos.GetClusterNodeLabelsRequestProto request,
           com.google.protobuf.RpcCallback<org.apache.hadoop.yarn.proto.YarnServiceProtos.GetClusterNodeLabelsResponseProto> done);
 
+      /**
+       * <code>rpc allocate(.hadoop.yarn.AllocateRequestProto) returns (.hadoop.yarn.AllocateResponseProto);</code>
+       */
+      public abstract void allocate(
+          com.google.protobuf.RpcController controller,
+          org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateRequestProto request,
+          com.google.protobuf.RpcCallback<org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateResponseProto> done);
+
     }
 
     public static com.google.protobuf.Service newReflectiveService(
@@ -373,6 +381,14 @@ public final class ApplicationClientProtocol {
           impl.getClusterNodeLabels(controller, request, done);
         }
 
+        @java.lang.Override
+        public  void allocate(
+            com.google.protobuf.RpcController controller,
+            org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateRequestProto request,
+            com.google.protobuf.RpcCallback<org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateResponseProto> done) {
+          impl.allocate(controller, request, done);
+        }
+
       };
     }
 
@@ -439,6 +455,8 @@ public final class ApplicationClientProtocol {
               return impl.getNodeToLabels(controller, (org.apache.hadoop.yarn.proto.YarnServiceProtos.GetNodesToLabelsRequestProto)request);
             case 21:
               return impl.getClusterNodeLabels(controller, (org.apache.hadoop.yarn.proto.YarnServiceProtos.GetClusterNodeLabelsRequestProto)request);
+            case 22:
+              return impl.allocate(controller, (org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateRequestProto)request);
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -497,6 +515,8 @@ public final class ApplicationClientProtocol {
               return org.apache.hadoop.yarn.proto.YarnServiceProtos.GetNodesToLabelsRequestProto.getDefaultInstance();
             case 21:
               return org.apache.hadoop.yarn.proto.YarnServiceProtos.GetClusterNodeLabelsRequestProto.getDefaultInstance();
+            case 22:
+              return org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateRequestProto.getDefaultInstance();
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -555,6 +575,8 @@ public final class ApplicationClientProtocol {
               return org.apache.hadoop.yarn.proto.YarnServiceProtos.GetNodesToLabelsResponseProto.getDefaultInstance();
             case 21:
               return org.apache.hadoop.yarn.proto.YarnServiceProtos.GetClusterNodeLabelsResponseProto.getDefaultInstance();
+            case 22:
+              return org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateResponseProto.getDefaultInstance();
             default:
               throw new java.lang.AssertionError("Can't get here.");
           }
@@ -739,6 +761,14 @@ public final class ApplicationClientProtocol {
         org.apache.hadoop.yarn.proto.YarnServiceProtos.GetClusterNodeLabelsRequestProto request,
         com.google.protobuf.RpcCallback<org.apache.hadoop.yarn.proto.YarnServiceProtos.GetClusterNodeLabelsResponseProto> done);
 
+    /**
+     * <code>rpc allocate(.hadoop.yarn.AllocateRequestProto) returns (.hadoop.yarn.AllocateResponseProto);</code>
+     */
+    public abstract void allocate(
+        com.google.protobuf.RpcController controller,
+        org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateRequestProto request,
+        com.google.protobuf.RpcCallback<org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateResponseProto> done);
+
     public static final
         com.google.protobuf.Descriptors.ServiceDescriptor
         getDescriptor() {
@@ -871,6 +901,11 @@ public final class ApplicationClientProtocol {
             com.google.protobuf.RpcUtil.<org.apache.hadoop.yarn.proto.YarnServiceProtos.GetClusterNodeLabelsResponseProto>specializeCallback(
               done));
           return;
+        case 22:
+          this.allocate(controller, (org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateRequestProto)request,
+            com.google.protobuf.RpcUtil.<org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateResponseProto>specializeCallback(
+              done));
+          return;
         default:
           throw new java.lang.AssertionError("Can't get here.");
       }
@@ -929,6 +964,8 @@ public final class ApplicationClientProtocol {
           return org.apache.hadoop.yarn.proto.YarnServiceProtos.GetNodesToLabelsRequestProto.getDefaultInstance();
         case 21:
           return org.apache.hadoop.yarn.proto.YarnServiceProtos.GetClusterNodeLabelsRequestProto.getDefaultInstance();
+        case 22:
+          return org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateRequestProto.getDefaultInstance();
         default:
           throw new java.lang.AssertionError("Can't get here.");
       }
@@ -987,6 +1024,8 @@ public final class ApplicationClientProtocol {
           return org.apache.hadoop.yarn.proto.YarnServiceProtos.GetNodesToLabelsResponseProto.getDefaultInstance();
         case 21:
           return org.apache.hadoop.yarn.proto.YarnServiceProtos.GetClusterNodeLabelsResponseProto.getDefaultInstance();
+        case 22:
+          return org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateResponseProto.getDefaultInstance();
         default:
           throw new java.lang.AssertionError("Can't get here.");
       }
@@ -1337,6 +1376,21 @@ public final class ApplicationClientProtocol {
             org.apache.hadoop.yarn.proto.YarnServiceProtos.GetClusterNodeLabelsResponseProto.class,
             org.apache.hadoop.yarn.proto.YarnServiceProtos.GetClusterNodeLabelsResponseProto.getDefaultInstance()));
       }
+
+      public  void allocate(
+          com.google.protobuf.RpcController controller,
+          org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateRequestProto request,
+          com.google.protobuf.RpcCallback<org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateResponseProto> done) {
+        channel.callMethod(
+          getDescriptor().getMethods().get(22),
+          controller,
+          request,
+          org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateResponseProto.getDefaultInstance(),
+          com.google.protobuf.RpcUtil.generalizeCallback(
+            done,
+            org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateResponseProto.class,
+            org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateResponseProto.getDefaultInstance()));
+      }
     }
 
     public static BlockingInterface newBlockingStub(
@@ -1453,6 +1507,11 @@ public final class ApplicationClientProtocol {
       public org.apache.hadoop.yarn.proto.YarnServiceProtos.GetClusterNodeLabelsResponseProto getClusterNodeLabels(
           com.google.protobuf.RpcController controller,
           org.apache.hadoop.yarn.proto.YarnServiceProtos.GetClusterNodeLabelsRequestProto request)
+          throws com.google.protobuf.ServiceException;
+
+      public org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateResponseProto allocate(
+          com.google.protobuf.RpcController controller,
+          org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateRequestProto request)
           throws com.google.protobuf.ServiceException;
     }
 
@@ -1726,6 +1785,18 @@ public final class ApplicationClientProtocol {
           org.apache.hadoop.yarn.proto.YarnServiceProtos.GetClusterNodeLabelsResponseProto.getDefaultInstance());
       }
 
+
+      public org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateResponseProto allocate(
+          com.google.protobuf.RpcController controller,
+          org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateRequestProto request)
+          throws com.google.protobuf.ServiceException {
+        return (org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateResponseProto) channel.callBlockingMethod(
+          getDescriptor().getMethods().get(22),
+          controller,
+          request,
+          org.apache.hadoop.yarn.proto.YarnServiceProtos.AllocateResponseProto.getDefaultInstance());
+      }
+
     }
 
     // @@protoc_insertion_point(class_scope:hadoop.yarn.ApplicationClientProtocolService)
@@ -1742,7 +1813,7 @@ public final class ApplicationClientProtocol {
     java.lang.String[] descriptorData = {
       "\n applicationclient_protocol.proto\022\013hado" +
       "op.yarn\032\016Security.proto\032\031yarn_service_pr" +
-      "otos.proto2\375\023\n ApplicationClientProtocol" +
+      "otos.proto2\320\024\n ApplicationClientProtocol" +
       "Service\022l\n\021getNewApplication\022*.hadoop.ya" +
       "rn.GetNewApplicationRequestProto\032+.hadoo" +
       "p.yarn.GetNewApplicationResponseProto\022u\n" +
@@ -1806,8 +1877,10 @@ public final class ApplicationClientProtocol {
       "sponseProto\022u\n\024getClusterNodeLabels\022-.ha" +
       "doop.yarn.GetClusterNodeLabelsRequestPro" +
       "to\032..hadoop.yarn.GetClusterNodeLabelsRes" +
-      "ponseProtoB?\n\034org.apache.hadoop.yarn.pro" +
-      "toB\031ApplicationClientProtocol\210\001\001\240\001\001"
+      "ponseProto\022Q\n\010allocate\022!.hadoop.yarn.All" +
+      "ocateRequestProto\032\".hadoop.yarn.Allocate" +
+      "ResponseProtoB?\n\034org.apache.hadoop.yarn." +
+      "protoB\031ApplicationClientProtocol\210\001\001\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
