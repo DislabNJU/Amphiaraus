@@ -890,8 +890,8 @@ public class FairScheduler extends
 
     synchronized (application) {
       if (!ask.isEmpty()) {
-        if (true || LOG.isDebugEnabled()) {
-          LOG.info("allocate: pre-update" +
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("allocate: pre-update" +
               " applicationAttemptId=" + appAttemptId +
               " application=" + application.getApplicationId());
         }

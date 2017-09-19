@@ -254,7 +254,7 @@ public class NetUtils {
       addr = InetSocketAddress.createUnresolved(host, port);
     }
 
-    LOG.info("addr in createSocketAddrForHost: " + addr.toString()); // to remove
+    //LOG.info("addr in createSocketAddrForHost: " + addr.toString()); // to remove
     
     return addr;
   }

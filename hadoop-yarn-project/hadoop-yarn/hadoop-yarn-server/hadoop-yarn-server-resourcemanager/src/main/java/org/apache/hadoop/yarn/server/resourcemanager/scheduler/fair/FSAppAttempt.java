@@ -307,7 +307,6 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
   synchronized public RMContainer allocate(NodeType type, FSSchedulerNode node,
       Priority priority, ResourceRequest request,
       Container container) {
-	  LOG.info("allocate in FSAppAttempt");
     // Update allowed locality level
     NodeType allowed = allowedLocalityLevel.get(priority);
     if (allowed != null) {
@@ -490,7 +489,6 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
       FSSchedulerNode node, ResourceRequest request, NodeType type,
       boolean reserved) {
 
-	  LOG.info("assignContainer1");
     // How much does this request need?
     Resource capability = request.getCapability();
 

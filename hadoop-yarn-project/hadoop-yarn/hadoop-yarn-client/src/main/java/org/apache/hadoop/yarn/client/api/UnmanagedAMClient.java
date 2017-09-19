@@ -36,14 +36,18 @@ package org.apache.hadoop.yarn.client.api;
  */
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -168,6 +172,8 @@ public class UnmanagedAMClient extends AbstractService{
   protected String appTrackingUrl;
   
   private boolean ready2regist;
+  
+  private Map<Integer, Long> expResponseTime = new HashMap<Integer, Long>();
 
   private static final long AM_STATE_WAIT_TIMEOUT_MS = 10000;
 
@@ -426,7 +432,14 @@ public class UnmanagedAMClient extends AbstractService{
 					LOG.info("request stale");
 					return;
 				}
+				
+				long start = System.currentTimeMillis();
 				AllocateResponse allocateResponse = rmClient.allocate(this.alloRequest);
+				long end = System.currentTimeMillis();
+				if(allocateResponse != null){
+					expResponseTime.put(allocateResponse.getResponseId(), end -start);
+				}
+				
 				int lastRId = lastResponseId;
 				if(lastAllocateResponse != null){
 					lastRId = lastAllocateResponse.getResponseId();
@@ -519,6 +532,37 @@ public class UnmanagedAMClient extends AbstractService{
   
   public void finishUAM() throws YarnException, IOException{
 	  rmClient.finishApplicationMaster();
+  }
+  
+  public void writeExpData() throws IOException{
+	  LOG.info("save expDataUAM");
+     /*  
+      String filePath = "/home/zxd/expdata/allocateResponseTimeRemote.csv";
+      File file = new File(filePath);
+      FileOutputStream out = new FileOutputStream(file);
+      OutputStreamWriter osw = new OutputStreamWriter(out, "UTF8");
+
+      BufferedWriter bw = new BufferedWriter(osw);
+      bw.append("responseId,responseTime(ms)\n");
+ 	  for(Map.Entry<Integer, Long> entry : this.expResponseTime.entrySet()){
+ 		  bw.append(String.valueOf(entry.getKey()) + "," + String.valueOf(entry.getValue()) + "\n");
+ 	  }
+
+     bw.close();
+     osw.close();
+     out.close(); 
+      */
+	  LOG.info("appid: " + applicationId.toString());
+	  LOG.info("atpid: " + applicationAttemptId.toString() );
+     String fileName = "/home/zxd/expdata/" + applicationId.toString() + "/allocateResponseTimeRemote.csv";
+     FileWriter writer = new FileWriter(fileName, true);
+     writer.write("responseId,responseTime(ms)\n");
+     for(Map.Entry<Integer, Long> entry : this.expResponseTime.entrySet()){
+    	 writer.write(String.valueOf(entry.getKey()) + "," + String.valueOf(entry.getValue()) + "\n");
+     }
+     writer.close();
+
+     
   }
   
 }

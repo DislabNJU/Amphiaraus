@@ -431,5 +431,7 @@ public abstract class AMRMClient<T extends AMRMClient.ContainerRequest> extends
       Thread.sleep(checkEveryMillis);
     } while (true);
   }
+  
+  public abstract void setAppId(String id);
 
 }

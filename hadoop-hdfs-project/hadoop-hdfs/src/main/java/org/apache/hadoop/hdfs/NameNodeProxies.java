@@ -203,8 +203,8 @@ public class NameNodeProxies {
     AbstractNNFailoverProxyProvider<T> failoverProxyProvider =
         createFailoverProxyProvider(conf, nameNodeUri, xface, true,
           fallbackToSimpleAuth);
-    LOG.info("nameNodeUri in createProxy: "+ nameNodeUri.toString()); // to remove hdfs://master:9000
-    LOG.info("nameNodeAddr in createProxy: "+nameNodeAddress.toString()); // to remove master/10.0.0.22:9000
+    //LOG.info("nameNodeUri in createProxy: "+ nameNodeUri.toString()); // to remove hdfs://master:9000
+    //LOG.info("nameNodeAddr in createProxy: "+nameNodeAddress.toString()); // to remove master/10.0.0.22:9000
     if (failoverProxyProvider == null) {
       // Non-HA case
       return createNonHAProxy(conf, nameNodeAddress, xface,

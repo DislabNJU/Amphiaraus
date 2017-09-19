@@ -148,5 +148,7 @@ public abstract class NMClient extends AbstractService {
   public NMTokenCache getNMTokenCache() {
     return nmTokenCache;
   }
+  
+  public abstract void setAppId(String id);
 
 }

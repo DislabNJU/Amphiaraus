@@ -213,8 +213,8 @@ public class DistributedFileSystem extends FileSystem {
       final long start, final long len) throws IOException {
     statistics.incrementReadOps(1);
     final Path absF = fixRelativePart(p);
-    LOG.info("absF in getFileBlockLocations: " + absF.toString()); // to remove
-    LOG.info("pathName in getFileBlockLocations: " + getPathName(p)); // to remove
+    //LOG.info("absF in getFileBlockLocations: " + absF.toString()); // to remove
+    //LOG.info("pathName in getFileBlockLocations: " + getPathName(p)); // to remove
     return new FileSystemLinkResolver<BlockLocation[]>() {
       @Override
       public BlockLocation[] doCall(final Path p)

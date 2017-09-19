@@ -395,15 +395,15 @@ public class SchedulerApplicationAttempt {
   }
   
   public synchronized void showRequests() {
-    if (true || LOG.isDebugEnabled()) {
+    if (LOG.isDebugEnabled()) {
       for (Priority priority : getPriorities()) {
         Map<String, ResourceRequest> requests = getResourceRequests(priority);
         if (requests != null) {
-          LOG.info("showRequests:" + " application=" + getApplicationId() + 
+          LOG.debug("showRequests:" + " application=" + getApplicationId() + 
               " headRoom=" + getHeadroom() + 
               " currentConsumption=" + currentConsumption.getMemory());
           for (ResourceRequest request : requests.values()) {
-            LOG.info("showRequests:" + " application=" + getApplicationId()
+            LOG.debug("showRequests:" + " application=" + getApplicationId()
                 + " request=" + request);
           }
         }
@@ -442,7 +442,7 @@ public class SchedulerApplicationAttempt {
     List<Container> returnContainerList =
         new ArrayList<Container>(newlyAllocatedContainers.size());
     List<NMToken> nmTokens = new ArrayList<NMToken>();
-    LOG.info("newlyAllocatedContainersSize: " + newlyAllocatedContainers.size() );
+    //LOG.info("newlyAllocatedContainersSize: " + newlyAllocatedContainers.size() );// to remove
     for (Iterator<RMContainer> i = newlyAllocatedContainers.iterator(); i
       .hasNext();) {
 

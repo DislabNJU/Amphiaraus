@@ -18,13 +18,21 @@
 
 package org.apache.hadoop.yarn.client.api.impl;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -42,6 +50,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.ipc.RPC;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.TokenIdentifier;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.ApplicationMasterProtocol;
 import org.apache.hadoop.yarn.api.protocolrecords.AllocateRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.AllocateResponse;
@@ -50,11 +60,13 @@ import org.apache.hadoop.yarn.api.protocolrecords.FinishApplicationMasterRespons
 import org.apache.hadoop.yarn.api.protocolrecords.RegisterApplicationMasterRequest;
 import org.apache.hadoop.yarn.api.protocolrecords.RegisterApplicationMasterResponse;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.ContainerStatus;
 import org.apache.hadoop.yarn.api.records.FinalApplicationStatus;
 import org.apache.hadoop.yarn.api.records.NMToken;
+import org.apache.hadoop.yarn.api.records.NodeId;
 import org.apache.hadoop.yarn.api.records.NodeReport;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
@@ -69,6 +81,7 @@ import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.ApplicationMasterNotRegisteredException;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.exceptions.YarnRuntimeException;
+import org.apache.hadoop.yarn.ipc.RPCUtil;
 import org.apache.hadoop.yarn.security.AMRMTokenIdentifier;
 import org.apache.hadoop.yarn.util.RackResolver;
 
@@ -95,14 +108,17 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
   protected String appHostName;
   protected int appHostPort;
   protected String appTrackingUrl;
+  protected String appId = "none";
 
   protected ApplicationMasterProtocol rmClient;
   boolean isRemote;
-  //boolean isUnmanaged;
+  boolean hasRemoteReq = false;
   UnmanagedAMClient uAMClient;
   Thread ram;
   protected Resource clusterAvailableResources;
   protected int clusterNodeCount;
+  
+  private Map<Integer, Long> expResponseTime = new HashMap<Integer, Long>();
   
   // blacklistedNodes is required for keeping history of blacklisted nodes that
   // are sent to RM. On RESYNC command from RM, blacklistedNodes are used to get
@@ -255,7 +271,6 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
             this.appHostPort, this.appTrackingUrl);
     
     RegisterApplicationMasterResponse response = rmClient.registerApplicationMaster(request);
-
     synchronized (this) {
       lastResponseId = 0;
       if (!response.getNMTokensFromPreviousAttempts().isEmpty()) {
@@ -273,6 +288,55 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
 	  uAMClient.startUAM();
   }
 
+  @Override
+  public void setAppId(String id){
+	  LOG.info("appId: " + id); 
+	  this.appId = id;
+  }
+  
+  private void writeExpData() throws IOException, YarnException{
+	  LOG.info("save expData");
+     /*
+      String filePath = "/home/zxd/expdata/allocateResponseTime.csv";
+      File file = new File(filePath);
+      if(file.exists()){
+    	  LOG.info("file exits!");
+      }
+      FileOutputStream out = new FileOutputStream(file);
+      OutputStreamWriter osw = new OutputStreamWriter(out, "UTF8");
+
+      BufferedWriter bw = new BufferedWriter(osw);
+      bw.append("responseId,responseTime(ms)\n");
+ 	  for(Map.Entry<Integer, Long> entry : this.expResponseTime.entrySet()){
+ 		  bw.append(String.valueOf(entry.getKey()) + "," + String.valueOf(entry.getValue()) + "\n");
+ 	  }
+
+     bw.close();
+     osw.close();
+     out.close(); 
+      */
+
+
+     String fileName = "/home/zxd/expdata/" + this.appId + "/allocateResponseTime.csv";
+     File dir = new File("/home/zxd/expdata/" +this.appId);
+     if(!dir.exists()) {
+       dir.mkdir();
+     }
+     
+     FileWriter writer = new FileWriter(fileName, true);
+     writer.write("responseId,responseTime(ms)\n");
+     for(Map.Entry<Integer, Long> entry : this.expResponseTime.entrySet()){
+    	 writer.write(String.valueOf(entry.getKey()) + "," + String.valueOf(entry.getValue()) + "\n");
+     }
+     writer.close();
+
+     
+     if(isRemote){
+ 	    uAMClient.writeExpData();
+  }
+      
+  }
+  
   public AllocateResponse allocateLocal(float progressIndicator)
 		  throws YarnException, IOException{
 	  LOG.info("allocate for local");
@@ -318,10 +382,14 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
 		      }
 
 		      try {
-		    	  long start = System.currentTimeMillis();
+		    	  //long start = System.currentTimeMillis();
 		    	  allocateResponse = rmClient.allocate(allocateRequest);
+		    	  /*
 		    	  long end = System.currentTimeMillis();
-		    	  LOG.info("response time: " + String.valueOf(end - start));
+		    	  if(allocateResponse != null){
+			    	  expResponseTime.put(allocateResponse.getResponseId(), end - start);
+		    	  }
+		    	  */
 		      } catch (ApplicationMasterNotRegisteredException e) {
 		        LOG.warn("ApplicationMaster is out of sync with ResourceManager,"
 		            + " hence resyncing.");
@@ -395,7 +463,6 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
 	  if(!isRemote){
 		  return allocateLocal(progressIndicator);
 	  }
-	  LOG.info("allocate for remote");
 	  
     Preconditions.checkArgument(progressIndicator >= 0,
         "Progress indicator should not be negative");
@@ -415,7 +482,7 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
     List<String> blacklistToRemoveRemote = new ArrayList<String>();
     
     AllocateResponse allocateResponseMerged = null;
-    
+
     try {
       synchronized (this) {
         askList = new ArrayList<ResourceRequest>();
@@ -424,32 +491,30 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
           // create a copy of ResourceRequest as we might change it while the 
           // RPC layer is using it to send info across
         	String resourceName = r.getResourceName();
-        	LOG.info("resourceName in ask: " + resourceName);
+        	// LOG.info("resourceName in ask: " + resourceName);
         	if(resourceName.contains(ResourceRequest.ANY)){
 
-        		LOG.info("resolveName in UAM: " + resourceName);
-        		askListRemote.add(ResourceRequest.newInstance(r.getPriority(),
-        				ResourceRequest.ANY, r.getCapability(), r.getNumContainers(),
-        				r.getRelaxLocality(), r.getNodeLabelExpression()));
-
+        		if(askListRemote.isEmpty()){
+            		askListRemote.add(ResourceRequest.newInstance(r.getPriority(),
+            				ResourceRequest.ANY, r.getCapability(), r.getNumContainers(),
+            				r.getRelaxLocality(), r.getNodeLabelExpression()));
+        		}
+        		
         		askList.add(ResourceRequest.newInstance(r.getPriority(),
         				ResourceRequest.ANY, r.getCapability(), r.getNumContainers(),
         				r.getRelaxLocality(), r.getNodeLabelExpression()));
 
         	}else if(resourceName.contains("hdfs")){
-        	//else if(resourceName.equals("slave-2-5") || resourceName.equals("slave-2-6") ||resourceName.equals("slave-2-7")
-        	//		||resourceName.equals("slave-2-8") || resourceName.equals("slave-2-9") || resourceName.equals("slave-2-10")){
-
-        		//String resolveName = resourceName;
         		
         		int idx = resourceName.indexOf(":");
         		String resolveName = resourceName.substring(idx + 3);
         		r.setResourceName(resolveName);
         		 
-        		LOG.info("resolveName in UAM: " + resourceName);
         		askListRemote.add(ResourceRequest.newInstance(r.getPriority(),
         				resolveName, r.getCapability(), r.getNumContainers(),
         				r.getRelaxLocality(), r.getNodeLabelExpression()));
+        		hasRemoteReq = true;
+                LOG.info("hasRemote: " + hasRemoteReq);
         	}else {
         		askList.add(ResourceRequest.newInstance(r.getPriority(),
         				resourceName, r.getCapability(), r.getNumContainers(),
@@ -457,7 +522,9 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
         	}
 
         }
-        
+        if(!hasRemoteReq) {
+        	askListRemote.clear();
+        }
         ApplicationAttemptId remoteAppAttemptId = uAMClient.getApplicationAttemptId();
         for(ContainerId r: release){
         	if(r.getApplicationAttemptId().equals(remoteAppAttemptId)){
@@ -498,22 +565,32 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
 
       try {
     	  // if(isRemote){
-    	  LOG.info("request to remote RM");
+    	  //LOG.info("request to remote RM");
     	  allocateResponseRemote = uAMClient.allocate(allocateRequestRemote);
+    	  /*
     	  if(allocateRequestRemote != null){
     		  LOG.info("remoteAllocateResponse get" );
     	  }else {
     		  LOG.info("remoteAllocateResponse null" );
 		}
+		*/
 
     	  //}else {
-    	  LOG.info("request to local RM");
+    	  //LOG.info("request to local RM");
+    	  long start = System.currentTimeMillis();
     	  allocateResponse = rmClient.allocate(allocateRequest);
+    	  long end = System.currentTimeMillis();
+    	  if(allocateResponse != null){
+        	  expResponseTime.put(allocateResponse.getResponseId(), end - start);  
+    	  }
+    	  
+    	  /*
     	  if(allocateResponse != null){
     		  LOG.info("localAllocateResponse get" );
     	  }else {
     		  LOG.info("localAllocateResponse null" );
 		}
+		*/
     	  //}   
     	  
       } catch (ApplicationMasterNotRegisteredException e) {
@@ -524,7 +601,6 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
           blacklistAdditions.addAll(this.blacklistedNodes);
           for (Map<String, TreeMap<Resource, ResourceRequestInfo>> rr : remoteRequestsTable
             .values()) {
-        	  LOG.info("tag1 in allocate");
             for (Map<Resource, ResourceRequestInfo> capabalities : rr.values()) {
               for (ResourceRequestInfo request : capabalities.values()) {
                 addResourceRequestToAsk(request.remoteRequest);
@@ -569,8 +645,8 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
                       .getCompletedContainersStatuses());
                 }
         }
-
         allocateResponseMerged =  mergeAllocateResponse(allocateResponse, allocateResponseRemote);
+
         LOG.info("Merge complete");
       }
     } finally {
@@ -599,7 +675,7 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
     		}
     		
     		if(allocateResponseRemote == null) {
-    			LOG.info("remoteResponse is null");
+    			//LOG.info("remoteResponse is null");
     			release.addAll(releaseListRemote);
     			for(ResourceRequest oldAsk : askListRemote) {
     				if(!ask.contains(oldAsk)) {
@@ -648,6 +724,7 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
 	  List<ContainerStatus> CompletedContainersStatusesMerged = responseBase.getCompletedContainersStatuses();
 	  CompletedContainersStatusesMerged.addAll(response.getCompletedContainersStatuses());
 	  */
+	  
 	  if(responseBase != null && response != null){
 		  
 		  List<NMToken> token = responseBase.getNMTokens();
@@ -657,12 +734,27 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
 
 		  List<NodeReport> report = response.getUpdatedNodes();
 		  if(report != null && !report.isEmpty()){
-			  responseBase.setUpdatedNodes(report);
+			  List<NodeReport> resolveReport = new ArrayList<NodeReport>();
+			  for(NodeReport r : report){
+				  String newHostName = "hdfs1://" + r.getNodeId().getHost();
+				  NodeId newNodeId = NodeId.newInstance(newHostName, r.getNodeId().getPort());
+				  r.setNodeId(newNodeId);
+				  resolveReport.add(r);
+			  }
+			  responseBase.setUpdatedNodes(resolveReport);
 		  }
 
 		  List<Container> containers = response.getAllocatedContainers();
 		  if(containers!= null && !containers.isEmpty()){
-			  responseBase.setAllocatedContainers(containers);
+			  List<Container> resolveContainers = new ArrayList<Container>();
+			  for(Container c : containers){
+				  LOG.info("remoteRes: " + c.getNodeId().getHost());
+				  String newHostName = "hdfs1://" + c.getNodeId().getHost();
+				  NodeId newNodeId = NodeId.newInstance(newHostName, c.getNodeId().getPort());
+				  c.setNodeId(newNodeId);
+				  resolveContainers.add(c);
+			  }
+			  responseBase.setAllocatedContainers(resolveContainers);
 		  }
 
 		  List<ContainerStatus> completed = response.getCompletedContainersStatuses();
@@ -711,6 +803,7 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
     FinishApplicationMasterRequest request =
         FinishApplicationMasterRequest.newInstance(appStatus, appMessage,
           appTrackingUrl);
+    //writeExpData();
     try {
       while (true) {
     	  
@@ -852,6 +945,11 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
     Preconditions.checkArgument(priority != null,
         "The priority at which to request containers should not be null ");
     List<LinkedHashSet<T>> list = new LinkedList<LinkedHashSet<T>>();
+    
+    if(isRemote && !hasRemoteReq && resourceName.contains("hdfs")){
+    	return list;
+    }
+    
     Map<String, TreeMap<Resource, ResourceRequestInfo>> remoteRequests = 
         this.remoteRequestsTable.get(priority);
     if (remoteRequests == null) {

@@ -21,6 +21,8 @@ package org.apache.hadoop.yarn.server.nodemanager.containermanager;
 import static org.apache.hadoop.service.Service.STATE.STARTED;
 
 import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
@@ -481,7 +483,7 @@ public class ContainerManagerImpl extends CompositeService implements
       PolicyProvider policyProvider) {
     this.server.refreshServiceAcl(configuration, policyProvider);
   }
-
+  
   @Override
   public void serviceStop() throws Exception {
     setBlockNewContainerRequests(true);
@@ -936,7 +938,7 @@ public class ContainerManagerImpl extends CompositeService implements
     for (ContainerId id : requests.getContainerIds()) {
       try {
         stopContainerInternal(identifier, id);
-        succeededRequests.add(id);
+        succeededRequests.add(id); 
       } catch (YarnException e) {
         failedRequests.put(id, SerializedException.newInstance(e));
       }

@@ -358,6 +358,7 @@ public class ResourceTrackerService extends AbstractService implements
 
     NodeStatus remoteNodeStatus = request.getNodeStatus();
     
+    /*
     //test; added by lxb;
     String msg = "ContainerStatuses of Node: " + remoteNodeStatus.getNodeId();
     //LOG.info(msg);
@@ -366,6 +367,7 @@ public class ResourceTrackerService extends AbstractService implements
     	ContainerStatus containerStatus = it.next();
     	LOG.info(msg + containerStatus.toString());
     }
+    */
     
     /**
      * Here is the node heartbeat sequence...

@@ -18,9 +18,12 @@
 
 package org.apache.hadoop.yarn.client.api.impl;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -90,6 +93,16 @@ public class NMClientImpl extends NMClient {
   //enabled by default
   private final AtomicBoolean cleanupRunningContainers = new AtomicBoolean(true);
   private ContainerManagementProtocolProxy cmProxy;
+  
+  private int writeidx = 0;
+  
+  private boolean firstflag = true;
+  
+  private String appId = "none";
+  
+  private Map<Long, Long>  getStatusTime = new HashMap<Long, Long>();
+  
+  private Map<Long, String>  conStartTime = new HashMap<Long, String>();
 
   public NMClientImpl() {
     super(NMClientImpl.class.getName());
@@ -181,6 +194,17 @@ public class NMClientImpl extends NMClient {
     // Do synchronization on StartedContainer to prevent race condition
     // between startContainer and stopContainer only when startContainer is
     // in progress for a given container.
+	  String localityString = "1";
+	  String hostname = container.getNodeId().getHost();
+	  String resolveName = hostname;
+	  if(hostname.contains("hdfs")){
+		  localityString = "0";
+  		int idx = hostname.indexOf(":");
+  		resolveName = hostname.substring(idx + 3);
+	  }
+	  NodeId resolveNodeId = NodeId.newInstance(resolveName, container.getNodeId().getPort());
+	  container.setNodeId(resolveNodeId);
+
     StartedContainer startingContainer = createStartedContainer(container);
     synchronized (startingContainer) {
       addStartingContainer(startingContainer);
@@ -188,6 +212,8 @@ public class NMClientImpl extends NMClient {
       Map<String, ByteBuffer> allServiceResponse;
       ContainerManagementProtocolProxyData proxy = null;
       try {
+    	  long start = System.currentTimeMillis();
+    	  
         proxy =
             cmProxy.getProxy(container.getNodeId().toString(),
                 container.getId());
@@ -209,6 +235,9 @@ public class NMClientImpl extends NMClient {
         }
         allServiceResponse = response.getAllServicesMetaData();
         startingContainer.state = ContainerState.RUNNING;
+        long end = System.currentTimeMillis();
+        conStartTime.put(start, String.valueOf(end - start) + "," + localityString);
+        writeExpData();    
       } catch (YarnException e) {
         startingContainer.state = ContainerState.COMPLETE;
         // Remove the started container if it failed to start
@@ -254,19 +283,79 @@ public class NMClientImpl extends NMClient {
     }
 
   }
+  
+  @Override
+  public  void setAppId(String id){
+	  this.appId = id;
+  }
+  
+  private void writeExpData() throws IOException, YarnException{
+	  synchronized (this){
+		  LOG.info("save expData");
 
+		  String fileName = "/home/zxd/expdata/"+ this.appId+ "/getStatusTimeInYarn_ms.csv";
+		  String fileName1 = "/home/zxd/expdata/"+ this.appId+ "/containerStartTime.csv";
+		  File dir = new File("/home/zxd/expdata/" +this.appId);
+		  if(!dir.exists()) {
+			  dir.mkdir();
+			  FileWriter writehead = new FileWriter(fileName, true);
+			  writehead.write("timestame,costTime(ms)\n"); 
+			  writehead.close();
+			  
+			  writehead = new FileWriter(fileName1, true);
+			  writehead.write("timestame,costTime(ms),local(1=localYarn,0=remoteYarn))\n"); 
+			  writehead.close();
+		  }
+		  FileWriter writer = new FileWriter(fileName, true);
+		  for(Map.Entry<Long, Long> entry : this.getStatusTime.entrySet()){
+			  writer.write(String.valueOf(entry.getKey()) + "," + String.valueOf(entry.getValue()) + "\n");
+		  }
+		  writer.close();
+		  this.getStatusTime.clear();
+		  
+
+		  FileWriter writer1 = new FileWriter(fileName1, true);
+		  for(Map.Entry<Long, String> entry : this.conStartTime.entrySet()){
+			  writer1.write(String.valueOf(entry.getKey()) + "," + entry.getValue() + "\n");
+		  }
+		  writer1.close();
+		  this.conStartTime.clear();
+	  }
+	  
+  }
+  
   @Override
   public ContainerStatus getContainerStatus(ContainerId containerId,
       NodeId nodeId) throws YarnException, IOException {
+	  
+	  String hostname = nodeId.getHost();
+	  String resolveName = hostname;
+	  if(hostname.contains("hdfs")){
+  		int idx = hostname.indexOf(":");
+  		resolveName = hostname.substring(idx + 3);
+	  }
+	  NodeId resolveNodeId = NodeId.newInstance(resolveName, nodeId.getPort());
+	  nodeId = resolveNodeId;
 
     ContainerManagementProtocolProxyData proxy = null;
     List<ContainerId> containerIds = new ArrayList<ContainerId>();
     containerIds.add(containerId);
     try {
       proxy = cmProxy.getProxy(nodeId.toString(), containerId);
+      
+      long start = System.currentTimeMillis();
       GetContainerStatusesResponse response =
           proxy.getContainerManagementProtocol().getContainerStatuses(
               GetContainerStatusesRequest.newInstance(containerIds));
+      long end = System.currentTimeMillis();
+      synchronized (this) {
+          writeidx += 1;
+          this.getStatusTime.put(start, end - start);
+          if(writeidx % 10 == 0){
+        	  writeExpData();
+          }  
+      }
+      
       if (response.getFailedRequests() != null
           && response.getFailedRequests().containsKey(containerId)) {
         Throwable t =

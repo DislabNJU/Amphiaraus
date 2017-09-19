@@ -337,13 +337,13 @@ public abstract class FileInputFormat<K, V> implements InputFormat<K, V> {
     ArrayList<FileSplit> splits = new ArrayList<FileSplit>(numSplits);
     NetworkTopology clusterMap = new NetworkTopology();
     for (FileStatus file: files) {
-      LOG.info("fileStatus in getSplits: "+ file.toString());  // to remove
+      //LOG.info("fileStatus in getSplits: "+ file.toString());  // to remove
       Path path = file.getPath();
       long length = file.getLen();
       if (length != 0) {
         FileSystem fs = path.getFileSystem(job);
-        LOG.info("fileSys in getSplits:" + fs.toString()); // to remove
-        LOG.info("fileSysName in getSplits:" + fs.getUri().toString()); // to remove
+        //LOG.info("fileSys in getSplits:" + fs.toString()); // to remove
+        //LOG.info("fileSysName in getSplits:" + fs.getUri().toString()); // to remove
         BlockLocation[] blkLocations;
         if (file instanceof LocatedFileStatus) {
         	LOG.info("LocatedFileStatus true");
@@ -353,7 +353,7 @@ public abstract class FileInputFormat<K, V> implements InputFormat<K, V> {
           blkLocations = fs.getFileBlockLocations(file, 0, length);
         }
         for (int i = 0; i < blkLocations.length; i++){
-        	LOG.info("blkLocations in getSplits:" + blkLocations[i].toString()); // to remove	
+        	//LOG.info("blkLocations in getSplits:" + blkLocations[i].toString()); // to remove	
         }
         if (isSplitable(fs, path)) {
           long blockSize = file.getBlockSize();
@@ -366,12 +366,6 @@ public abstract class FileInputFormat<K, V> implements InputFormat<K, V> {
             splits.add(makeSplit(path, length-bytesRemaining, splitSize,
                 splitHosts[0], splitHosts[1]));
             bytesRemaining -= splitSize;
-            for (int i = 0; i < splitHosts[0] .length; i++){
-                LOG.info("splitHosts in getSplits:" +splitHosts[0][i]); // to remove
-            }
-            for (int i = 0; i < splitHosts[1] .length; i++){
-                LOG.info("cachedHosts in getSplits:" +splitHosts[1][i]); // to remove
-            }
           }
 
           if (bytesRemaining != 0) {
@@ -532,17 +526,19 @@ public abstract class FileInputFormat<K, V> implements InputFormat<K, V> {
   public static Path[] getInputPaths(JobConf conf) {
     String dirs = conf.get(org.apache.hadoop.mapreduce.lib.input.
       FileInputFormat.INPUT_DIR, "");
-    LOG.info("dirs in getInputPaths: "+ dirs.toString()); // to remove
+    //LOG.info("dirs in getInputPaths: "+ dirs.toString()); // to remove
     String [] list = StringUtils.split(dirs);
     Path[] result = new Path[list.length];
     for (int i = 0; i < list.length; i++) {
       result[i] = new Path(StringUtils.unEscapeString(list[i]));
+      /*
       LOG.info("path in getInputPaths: " + result[i].toString()); // to remove
       LOG.info("pathUrl: " + result[i].toUri().toString()); // to remove
       LOG.info("pathScheme: " + result[i].toUri().getScheme()); // to remove
       LOG.info("pathAuthority: " + result[i].toUri().getAuthority()); // to remove
       LOG.info("pathPath: " + result[i].toUri().getPath()); // to remove
       LOG.info("pathHost: " + result[i].toUri().getHost()); // to remove
+      */
     }
     return result;
   }

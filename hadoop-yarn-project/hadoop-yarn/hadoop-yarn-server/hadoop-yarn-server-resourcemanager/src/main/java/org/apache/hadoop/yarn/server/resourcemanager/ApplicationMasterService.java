@@ -234,20 +234,15 @@ public class ApplicationMasterService extends AbstractService implements
   public RegisterApplicationMasterResponse registerApplicationMaster(
       RegisterApplicationMasterRequest request) throws YarnException,
       IOException {
-	  LOG.info("receive registerAM request");  // to remove
 	  
     AMRMTokenIdentifier amrmTokenIdentifier = authorizeRequest();
-    if(amrmTokenIdentifier != null)
-    	LOG.info("amrmTokenIdentifier get" );  // to remove
     
     ApplicationAttemptId applicationAttemptId =
     		amrmTokenIdentifier.getApplicationAttemptId();
-    LOG.info("applicationAttemptId: " + applicationAttemptId.toString());  // to remove
     
     ApplicationId appID = applicationAttemptId.getApplicationId();
     AllocateResponseLock lock = responseMap.get(applicationAttemptId);
     if (lock == null) {
-    	LOG.info("lock = null");  // to remove
       RMAuditLogger.logFailure(this.rmContext.getRMApps().get(appID).getUser(),
           AuditConstants.REGISTER_AM, "Application doesn't exist in cache "
               + applicationAttemptId, "ApplicationMasterService",
@@ -259,7 +254,6 @@ public class ApplicationMasterService extends AbstractService implements
     // Allow only one thread in AM to do registerApp at a time.
     synchronized (lock) {
       AllocateResponse lastResponse = lock.getAllocateResponse();
-      LOG.info("get lastResponse: " + lastResponse.toString()); // to remove
       if (hasApplicationMasterRegistered(applicationAttemptId)) {
         String message =
             "Application Master is already registered : "
@@ -311,7 +305,6 @@ public class ApplicationMasterService extends AbstractService implements
           ((AbstractYarnScheduler) rScheduler)
             .getTransferredContainers(applicationAttemptId);
       if (!transferredContainers.isEmpty()) {
-    	  LOG.info("transferredContainers is not empty"); // to remove
         response.setContainersFromPreviousAttempts(transferredContainers);
         List<NMToken> nmTokens = new ArrayList<NMToken>();
         for (Container container : transferredContainers) {
@@ -330,7 +323,6 @@ public class ApplicationMasterService extends AbstractService implements
             }
           }
         }
-        LOG.info("nmTokens: " + nmTokens.toString()); // to remove
         
         response.setNMTokensFromPreviousAttempts(nmTokens);
         LOG.info("Application " + appID + " retrieved "
@@ -480,7 +472,6 @@ public class ApplicationMasterService extends AbstractService implements
             ((AbstractYarnScheduler) rScheduler)
               .getTransferredContainers(appAttemptId);
         if (!transferredContainers.isEmpty()) {
-      	  LOG.info("transferredContainers is not empty"); // to remove
           response.setContainersFromPreviousAttempts(transferredContainers);
           List<NMToken> nmTokens = new ArrayList<NMToken>();
           for (Container container : transferredContainers) {
@@ -499,7 +490,6 @@ public class ApplicationMasterService extends AbstractService implements
               }
             }
           }
-          LOG.info("nmTokens: " + nmTokens.toString()); // to remove
           
           response.setNMTokensFromPreviousAttempts(nmTokens);
           LOG.info("Application " + application + " retrieved "
@@ -730,22 +720,12 @@ public class ApplicationMasterService extends AbstractService implements
   @Override
   public AllocateResponse allocate(AllocateRequest request)
       throws YarnException, IOException {
-	  LOG.info("AMS receive AllocateRequest");
-	  
-	  /*
-	  if(request.getUMS()){
-		  return allocateForUMS(request);
-	  }
-	  LOG.info("isUMS is false" );
-	  */
 	  
     AMRMTokenIdentifier amrmTokenIdentifier = authorizeRequest();
 
     ApplicationAttemptId appAttemptId =
         amrmTokenIdentifier.getApplicationAttemptId();
     ApplicationId applicationId = appAttemptId.getApplicationId();
-    
-    LOG.info("appAttemptId: "  + appAttemptId.toString());
 
     this.amLivelinessMonitor.receivedPing(appAttemptId);
 
@@ -760,7 +740,6 @@ public class ApplicationMasterService extends AbstractService implements
     }
     synchronized (lock) {
       AllocateResponse lastResponse = lock.getAllocateResponse();
-      LOG.info("last responseId'" + lastResponse.getResponseId());
       
       if (!hasApplicationMasterRegistered(appAttemptId)) {
         String message =
@@ -776,7 +755,6 @@ public class ApplicationMasterService extends AbstractService implements
 
       if ((request.getResponseId() + 1) == lastResponse.getResponseId()) {
         /* old heartbeat */
-    	  LOG.info("return lastResponse");
         return lastResponse;
       } else if (request.getResponseId() + 1 < lastResponse.getResponseId()) {
         String message =
@@ -790,10 +768,8 @@ public class ApplicationMasterService extends AbstractService implements
       float filteredProgress = request.getProgress();
       if (Float.isNaN(filteredProgress) || filteredProgress == Float.NEGATIVE_INFINITY
         || filteredProgress < 0) {
-    	  LOG.info("AMS tag1");
          request.setProgress(0);
       } else if (filteredProgress > 1 || filteredProgress == Float.POSITIVE_INFINITY) {
-    	  LOG.info("AMS tag2");
         request.setProgress(1);
       }
 
@@ -819,9 +795,6 @@ public class ApplicationMasterService extends AbstractService implements
       // set label expression for Resource Requests if resourceName=ANY 
       ApplicationSubmissionContext asc = app.getApplicationSubmissionContext();
       for (ResourceRequest req : ask) {
-    	  if(req.getResourceName() != null){
-        	  LOG.info("ask in LAM: " + req.getResourceName());
-    	  }
         if (null == req.getNodeLabelExpression()
             && ResourceRequest.ANY.equals(req.getResourceName())) {
           req.setNodeLabelExpression(asc.getNodeLabelExpression());
@@ -861,11 +834,11 @@ public class ApplicationMasterService extends AbstractService implements
       Allocation allocation =
           this.rScheduler.allocate(appAttemptId, ask, release, 
               blacklistAdditions, blacklistRemovals);
-      
+      /*
       for(Container c : allocation.getContainers()){
     	  LOG.info("allocation node in LAM: " + c.getNodeId().getHost());
       }
-
+       */
       if (!blacklistAdditions.isEmpty() || !blacklistRemovals.isEmpty()) {
         LOG.info("blacklist are updated in Scheduler." +
             "blacklistAdditions: " + blacklistAdditions + ", " +
