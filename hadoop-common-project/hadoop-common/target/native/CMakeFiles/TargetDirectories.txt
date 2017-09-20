@@ -1,3 +1,0 @@
-/home/lxb/workspace/hadoop-2.6.2-src/hadoop-common-project/hadoop-common/target/native/CMakeFiles/hadoop.dir
-/home/lxb/workspace/hadoop-2.6.2-src/hadoop-common-project/hadoop-common/target/native/CMakeFiles/hadoop_static.dir
-/home/lxb/workspace/hadoop-2.6.2-src/hadoop-common-project/hadoop-common/target/native/CMakeFiles/test_bulk_crc32.dir

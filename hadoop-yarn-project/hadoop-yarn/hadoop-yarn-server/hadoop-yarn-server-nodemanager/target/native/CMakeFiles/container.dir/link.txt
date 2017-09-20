@@ -1,2 +1,0 @@
-/usr/bin/ar cr libcontainer.a  CMakeFiles/container.dir/main/native/container-executor/impl/configuration.c.o CMakeFiles/container.dir/main/native/container-executor/impl/container-executor.c.o
-/usr/bin/ranlib libcontainer.a

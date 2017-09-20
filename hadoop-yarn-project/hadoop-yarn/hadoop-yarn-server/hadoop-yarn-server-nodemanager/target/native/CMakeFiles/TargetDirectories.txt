@@ -1,3 +1,0 @@
-/home/lxb/workspace/hadoop-2.6.2-src/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/target/native/CMakeFiles/container.dir
-/home/lxb/workspace/hadoop-2.6.2-src/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/target/native/CMakeFiles/container-executor.dir
-/home/lxb/workspace/hadoop-2.6.2-src/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/target/native/CMakeFiles/test-container-executor.dir
